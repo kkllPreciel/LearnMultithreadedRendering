@@ -36,6 +36,9 @@
     <ClCompile Include="learn_multithreaded_rendering.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\renderer.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="learn_multithreaded_rendering.h">
@@ -51,5 +54,10 @@
     <QtRcc Include="learn_multithreaded_rendering.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="renderer\renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
