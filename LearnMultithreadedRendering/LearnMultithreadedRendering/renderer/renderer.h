@@ -10,7 +10,6 @@
 
 // include
 #include <memory>
-#include <windef.h>
 
 namespace App
 {
