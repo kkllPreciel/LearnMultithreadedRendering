@@ -44,7 +44,7 @@ namespace App
        */
       void Create(HWND handle, std::uint32_t width, std::uint32_t height)
       {
-        // TODO:2‰ñÀs‚³‚ê‚Ä‚àƒƒ‚ƒŠƒŠ[ƒN‚µ‚È‚¢‚©’²‚×‚é
+        assert(device_ == nullptr);
         device_ = std::make_unique<Sein::Direct3D12::Device>();
         device_->Create(handle, width, height);
       }
@@ -73,7 +73,6 @@ namespace App
   {
     auto renderer = std::make_unique<Renderer>();
 
-    renderer->Create(handle, width, height);
     renderer->Create(handle, width, height);
 
     return renderer;
