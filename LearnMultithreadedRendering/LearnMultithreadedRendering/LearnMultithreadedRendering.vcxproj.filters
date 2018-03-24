@@ -60,4 +60,11 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Resources\Shaders\pixel.hlsl" />
+    <FxCompile Include="Resources\Shaders\vertex.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\common.hlsli" />
+  </ItemGroup>
 </Project>
