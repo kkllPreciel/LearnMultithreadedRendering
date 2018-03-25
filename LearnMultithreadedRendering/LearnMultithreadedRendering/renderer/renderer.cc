@@ -48,6 +48,34 @@ namespace App
         device_ = std::make_unique<Sein::Direct3D12::Device>();
         device_->Create(handle, width, height);
       }
+
+      /**
+       *  @brief  実行する
+       */
+      void Execute() override
+      {
+        // オブジェクトの描画に必要なもの
+        // ワールド座標
+        // カメラ
+        // プロジェクション
+        // メッシュ
+        // ライト
+        // ボーン行列
+
+        // TODO:前フレームで作成したコマンドのリストを実行する(GPU)
+
+        // TODO:前フレームのゲーム情報からコマンドのリストを作成する(キューに格納されている予定)
+      }
+      
+      /**
+       *  @brief  画面を更新する
+       */
+      void Present() override
+      {
+        // TODO:描画終了待ちを行う
+
+        // TODO:画面の更新を行う
+      }
     
       /**
        *  @brief  終了処理を行う

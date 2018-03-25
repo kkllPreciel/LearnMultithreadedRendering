@@ -28,6 +28,16 @@ namespace App
      *  @brief  デストラクタ
      */
     virtual ~IRenderer() = default;
+
+    /**
+     *  @brief  実行する
+     */
+    virtual void Execute() = 0;
+
+    /**
+     *  @brief  画面を更新する
+     */
+    virtual void Present() = 0;
   
     /**
      *  @brief  終了処理を行う

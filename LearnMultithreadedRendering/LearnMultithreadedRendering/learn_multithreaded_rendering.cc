@@ -36,9 +36,16 @@ LearnMultithreadedRendering::~LearnMultithreadedRendering()
  */
 void LearnMultithreadedRendering::MainLoop()
 {
-  // レンダリング開始(コマンドバッファを作成し、GPUに処理を投げる)
+  // 非同期で動かすもの(ゲームループ、レンダラー、GPU)
+  // ゲームループがレンダラーへオブジェクトをプッシュ
+  // 次のフレームでレンダラーがコマンドバッファを作成
+  // さらに次のフレームでGPUがレンダリングし画面を更新。
 
-  // ゲームオブジェクトの更新
+  // TODO:レンダリング開始(コマンドバッファを作成し、GPUに処理を投げる)
+  renderer_->Execute();
+
+  // TODO:ゲームオブジェクトの更新
 
   // レンダリング終了待ち(GPUの処理終了待ち)
+  renderer_->Present();
 }
