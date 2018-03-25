@@ -23,12 +23,12 @@ LearnMultithreadedRendering::LearnMultithreadedRendering(QWidget *parent)
  */
 LearnMultithreadedRendering::~LearnMultithreadedRendering()
 {
-  renderer_.reset();
-
   if (timer->isActive())
   {
     timer->stop();
   }
+
+  renderer_.reset();
 }
 
 /**
