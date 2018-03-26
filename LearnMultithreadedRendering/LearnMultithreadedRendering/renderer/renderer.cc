@@ -23,7 +23,7 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      Renderer() : device_(nullptr)
+      Renderer() : device_(nullptr), execute_command_list_(nullptr), store_command_list_(nullptr)
       {
 
       }
@@ -47,6 +47,10 @@ namespace App
         assert(device_ == nullptr);
         device_ = std::make_unique<Sein::Direct3D12::Device>();
         device_->Create(handle, width, height);
+
+        // コマンドリストの作成
+        execute_command_list_ = device_->CreateCommandList(D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
+        store_command_list_ = device_->CreateCommandList(D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
       }
 
       /**
@@ -54,6 +58,9 @@ namespace App
        */
       void Execute() override
       {
+        // 実行用コマンドリストと作成用コマンドリストを交換する
+        execute_command_list_.swap(store_command_list_);
+
         // オブジェクトの描画に必要なもの
         // ワールド座標
         // カメラ
@@ -63,9 +70,13 @@ namespace App
         // ボーン行列
 
         // 前フレームで作成したコマンドのリストを実行する(GPU)
-        device_->ExecuteCommandLists();
+        device_->ExecuteCommandLists(execute_command_list_.get());
 
         // TODO:前フレームのゲーム情報からコマンドのリストを作成する(キューに格納されている予定)
+
+        // TODO:BeginScene、EndScene内のリソース指定を変更できるように
+        device_->BeginScene(store_command_list_.get());
+        device_->EndScene(store_command_list_.get());
       }
       
       /**
@@ -84,11 +95,15 @@ namespace App
        */
       void Destroy() override
       {
+        store_command_list_.reset();
+        execute_command_list_.reset();
         device_.reset();
       }
 
     private:
-      std::unique_ptr<Sein::Direct3D12::Device> device_;  ///< デバイス
+      std::unique_ptr<Sein::Direct3D12::Device> device_;                      ///< デバイス
+      std::shared_ptr<Sein::Direct3D12::ICommandList> execute_command_list_;  ///< 実行用コマンドリスト
+      std::shared_ptr<Sein::Direct3D12::ICommandList> store_command_list_;    ///< 作成用コマンドリスト
     };
   };
 
