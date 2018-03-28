@@ -75,8 +75,9 @@ namespace App
         // TODO:前フレームのゲーム情報からコマンドのリストを作成する(キューに格納されている予定)
 
         // TODO:BeginScene、EndScene内のリソース指定を変更できるように
-        device_->BeginScene(store_command_list_.get());
-        device_->EndScene(store_command_list_.get());
+        auto buffer_index = device_->GetNextBackBufferIndex();
+        device_->BeginScene(store_command_list_.get(), buffer_index);
+        device_->EndScene(store_command_list_.get(), buffer_index);
       }
       
       /**
