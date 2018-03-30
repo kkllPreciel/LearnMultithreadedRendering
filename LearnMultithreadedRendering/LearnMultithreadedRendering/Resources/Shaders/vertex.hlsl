@@ -47,19 +47,19 @@ VSOutput main(VSInput input)
 
     float4 pos = float4(input.position, 1.0);
 
-    pos = mul(cbv[input.id].world, pos);
-    pos = mul(view, pos);
-    pos = mul(projection, pos);
+    //pos = mul(cbv[input.id].world, pos);
+    //pos = mul(view, pos);
+    //pos = mul(projection, pos);
 
     result.position = pos;
     result.color = float4(1.0, 1.0, 1.0, 1.0);
     result.uv = input.uv;
     
     // ワールド空間での法線ベクトル(近似値)
-    result.normal = mul(cbv[input.id].world, float4(input.normal, 1.0));
+    //result.normal = mul(cbv[input.id].world, float4(input.normal, 1.0));
 
     // ワールド空間での座標
-    result.wPos = mul(cbv[input.id].world, float4(input.position, 1.0));
+    //result.wPos = mul(cbv[input.id].world, float4(input.position, 1.0));
 
     return result;
 }

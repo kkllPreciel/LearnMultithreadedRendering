@@ -246,6 +246,8 @@ void RE_Direct(const in IncidentLight directLight, const in GeometricContext geo
 PSOutput main(VSOutput input)
 {
     PSOutput output = (PSOutput) 0;
+    output.color = float4(1.0, 1.0, 1.0, 1.0);
+    return output;
 
     // 座標・向き・法線
     GeometricContext geometry;

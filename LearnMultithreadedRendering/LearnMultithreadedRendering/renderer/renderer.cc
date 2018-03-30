@@ -13,10 +13,28 @@
 #include <Sein/Direct3D12/direct3d12_device.h>
 #include "renderer/renderer.h"
 
+
+// TODO:削除
+#include <Sein/Direct3D12/vertex_buffer.h>
+#include <Sein/Direct3D12/index_buffer.h>
+
 namespace App
 {
   namespace
   {
+    // TODO:削除
+    // アラインメントを1バイトに設定
+#pragma pack(push, 1)
+    struct Vertex
+    {
+      DirectX::XMFLOAT3 position; ///< 座標
+      DirectX::XMFLOAT3 normal;   ///< 法線ベクトル
+      DirectX::XMFLOAT2 texcoord; ///< テクスチャUV座標
+    };
+#pragma pack(pop)
+    static Sein::Direct3D12::VertexBuffer vertex_buffer;
+    static Sein::Direct3D12::IndexBuffer index_buffer;
+
     /**
      *  @brief  レンダラー用クラス
      */
@@ -59,6 +77,17 @@ namespace App
         terminate_ = false;
         processing_ = false;
         thread_ = std::make_unique<std::thread>(&Renderer::ThreadMain, this);
+
+
+        // TODO削除
+        Vertex vertices[] = {
+          { { 0.0f, 0.25f, 0.0f },{ 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f } },
+          { { 0.25f, -0.25f, 0.0f },{ 0.0f, 1.0f, 0.0f },{ 0.0f, 1.0f } },
+          { { -0.25f, -0.25f, 0.0f },{ 0.0f, 1.0f, 0.0f },{ 0.0f, 1.0f } },
+        };
+        std::uint32_t indices[] = { 0, 1, 2 };
+        vertex_buffer.Create(const_cast<ID3D12Device*>(&device_->GetDevice()), sizeof(Vertex) * 3, sizeof(Vertex), &vertices);
+        index_buffer.Create(const_cast<ID3D12Device*>(&device_->GetDevice()), sizeof(std::uint32_t) * 3, &indices, DXGI_FORMAT_R32_UINT);
       }
 
       /**
@@ -143,6 +172,13 @@ namespace App
           // TODO:BeginScene、EndScene内のリソース指定を変更できるように
           auto buffer_index = device_->GetNextBackBufferIndex();
           device_->BeginScene(store_command_list_.get(), buffer_index);
+
+          // TODO:削除
+          store_command_list_->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+          store_command_list_->SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
+          store_command_list_->SetIndexBuffer(&(index_buffer.GetView()));
+          device_->Render(store_command_list_.get(), 3, 1);
+
           device_->EndScene(store_command_list_.get(), buffer_index);
 
 
