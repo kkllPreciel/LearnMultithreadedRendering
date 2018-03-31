@@ -129,6 +129,7 @@
     <QtRcc Include="learn_multithreaded_rendering.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="model\mesh.h" />
     <ClInclude Include="renderer\renderer.h" />
   </ItemGroup>
   <ItemGroup>
