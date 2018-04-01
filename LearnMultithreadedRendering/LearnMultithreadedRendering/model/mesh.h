@@ -45,22 +45,9 @@ namespace App
     IMesh& operator = (const IMesh& other) = delete;
 
     /**
-     *  @brief  頂点バッファを取得する
-     *  @return 頂点バッファ
+     *  @brief  終了処理を行う
      */
-    virtual const Sein::Direct3D12::VertexBuffer& GetVertexBuffer() const = 0;
-
-    /**
-     *  @brief  インデックスバッファを取得する
-     *  @return インデックスバッファ
-     */
-    virtual const Sein::Direct3D12::IndexBuffer& GetIndexBuffer() const = 0;
-
-    /**
-     *  @brief  頂点インデックスの個数を取得する
-     *  @param  頂点インデックスの個数
-     */
-    virtual std::uint32_t GetIndexCount() const = 0;
+    virtual void Destroy() = 0;
 
     /**
      *  @brief  正三角形(1ポリゴン)のメッシュを作成する

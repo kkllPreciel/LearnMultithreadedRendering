@@ -39,6 +39,12 @@
     <ClCompile Include="renderer\renderer.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="model\mesh.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\remder_mesh.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="learn_multithreaded_rendering.h">
@@ -60,6 +66,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="model\mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\render_mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
