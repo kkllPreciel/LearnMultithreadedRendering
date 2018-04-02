@@ -1,8 +1,8 @@
 /**
- *  @file     render_mesh.h
- *  @brief    描画用メッシュに関するヘッダファイル
+ *  @file     mesh.h
+ *  @brief    メッシュに関するヘッダファイル
  *  @author   kkllPreciel
- *  @date     2018/04/01
+ *  @date     2018/04/02
  *  @version  1.0
  */
 
@@ -17,33 +17,33 @@
 namespace App
 {
   /**
-   *  @brief  描画用メッシュ用インターフェイス
+   *  @brief  メッシュ用インターフェイス
    */
-  class IRenderMesh
+  class IMesh
   {
   public:
     /**
      *  @brief  コンストラクタ
      */
-    IRenderMesh() = default;
+    IMesh() = default;
 
     /**
      *  @brief  デストラクタ
      */
-    virtual ~IRenderMesh() = default;
+    virtual ~IMesh() = default;
 
     /**
      *  @brief  コピーコンストラクタ
      *  @param  other:コピー元のインスタンス
      */
-    IRenderMesh(const IRenderMesh& other) = delete;
+    IMesh(const IMesh& other) = delete;
   
     /**
      *  @brief  代入演算子オペレータ
      *  @param  other:代入元のインスタンス
      *  @return 代入後のインスタンス
      */
-    IRenderMesh& operator = (const IRenderMesh& other) = delete;
+    IMesh& operator = (const IMesh& other) = delete;
 
     /**
      *  @brief  終了処理を行う
@@ -69,14 +69,14 @@ namespace App
     virtual std::uint32_t GetIndexCount() const = 0;
 
     /**
-     *  @brief  描画用のメッシュを作成する
+     *  @brief  メッシュを作成する
      *  @param  device:デバイス
      *  @param  vertices:頂点配列へのポインタ
      *  @param  vertex_count:頂点数
      *  @param  indices:頂点インデックス配列へのポインタ
      *  @param  index_count:頂点インデックス数
-     *  @return 描画用のメッシュ用インターフェイスへのシェアードポインタ
+     *  @return メッシュ用インターフェイスへのシェアードポインタ
      */
-    static std::shared_ptr<IRenderMesh> Create(Sein::Direct3D12::Device* device, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count);
+    static std::shared_ptr<IMesh> Create(Sein::Direct3D12::Device* device, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count);
   };
 };

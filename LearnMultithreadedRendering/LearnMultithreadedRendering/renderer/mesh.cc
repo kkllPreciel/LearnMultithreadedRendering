@@ -1,13 +1,13 @@
 /**
- *  @file     render_mesh.cc
- *  @brief    描画用メッシュに関する処理を行うプログラムソース
+ *  @file     mesh.cc
+ *  @brief    メッシュに関する処理を行うプログラムソース
  *  @author   kkllPreciel
- *  @date     2018/04/01
+ *  @date     2018/04/02
  *  @version  1.0
  */
 
  // include
-#include "render_mesh.h"
+#include "mesh.h"
 
 namespace App
 {
@@ -24,15 +24,15 @@ namespace App
 #pragma pack(pop)
 
     /**
-     *  @brief  描画用メッシュ用クラス
+     *  @brief  メッシュ用クラス
      */
-    class RenderMesh final : public IRenderMesh
+    class Mesh final : public IMesh
     {
     public:
       /**
        *  @brief  コンストラクタ
        */
-      RenderMesh() : vertex_buffer_(nullptr), index_buffer_(nullptr), vertex_count_(0), index_count_(0)
+      Mesh() : vertex_buffer_(nullptr), index_buffer_(nullptr), vertex_count_(0), index_count_(0)
       {
 
       }
@@ -40,7 +40,7 @@ namespace App
       /**
        *  @brief  デストラクタ
        */
-      ~RenderMesh() override
+      ~Mesh() override
       {
         Destroy();
       }
@@ -114,26 +114,26 @@ namespace App
   };
 
   /**
-   *  @brief  描画用のメッシュを作成する
+   *  @brief  メッシュを作成する
    *  @param  device:デバイス
    *  @param  vertices:頂点配列へのポインタ
    *  @param  vertex_count:頂点数
    *  @param  indices:頂点インデックス配列へのポインタ
    *  @param  index_count:頂点インデックス数
-   *  @return 描画用のメッシュ用インターフェイスへのシェアードポインタ
+   *  @return メッシュ用インターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<IRenderMesh> IRenderMesh::Create(Sein::Direct3D12::Device* device, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count)
+  std::shared_ptr<IMesh> IMesh::Create(Sein::Direct3D12::Device* device, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count)
   {
-    auto render_mesh = std::make_shared<RenderMesh>();
+    auto mesh = std::make_shared<Mesh>();
     auto vertex_buffer = new Sein::Direct3D12::VertexBuffer();
     auto index_buffer = new Sein::Direct3D12::IndexBuffer();
 
-    render_mesh->SetVertexBuffer(vertex_buffer, vertex_count);
-    render_mesh->SetIndexBuffer(index_buffer, index_count);
+    mesh->SetVertexBuffer(vertex_buffer, vertex_count);
+    mesh->SetIndexBuffer(index_buffer, index_count);
         
     vertex_buffer->Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(Vertex) * vertex_count, sizeof(Vertex), vertices);
     index_buffer->Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(std::uint32_t) * index_count, indices, DXGI_FORMAT_R32_UINT);
     
-    return render_mesh;
+    return mesh;
   }
 };

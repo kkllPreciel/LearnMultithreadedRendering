@@ -117,8 +117,7 @@
   <ItemGroup>
     <ClCompile Include="learn_multithreaded_rendering.cc" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="model\mesh.cc" />
-    <ClCompile Include="renderer\remder_mesh.cc" />
+    <ClCompile Include="renderer\mesh.cc" />
     <ClCompile Include="renderer\renderer.cc" />
   </ItemGroup>
   <ItemGroup>
@@ -131,9 +130,8 @@
     <QtRcc Include="learn_multithreaded_rendering.qrc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="model\mesh.h" />
     <ClInclude Include="renderer\renderer.h" />
-    <ClInclude Include="renderer\render_mesh.h" />
+    <ClInclude Include="renderer\mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\pixel.hlsl">
