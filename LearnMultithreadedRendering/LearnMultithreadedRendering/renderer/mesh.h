@@ -54,7 +54,7 @@ namespace App
      *  @brief  頂点バッファを取得する
      *  @return 頂点バッファ
      */
-    virtual const Sein::Direct3D12::VertexBuffer& GetVertexBuffer() const = 0;
+    virtual const Sein::Direct3D12::IVertexBuffer& GetVertexBuffer() const = 0;
 
     /**
      *  @brief  インデックスバッファを取得する

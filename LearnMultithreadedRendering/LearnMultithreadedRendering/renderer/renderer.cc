@@ -32,7 +32,7 @@ namespace App
       DirectX::XMFLOAT2 texcoord; ///< テクスチャUV座標
     };
 #pragma pack(pop)
-    static Sein::Direct3D12::VertexBuffer vertex_buffer;
+    static std::unique_ptr<Sein::Direct3D12::IVertexBuffer> vertex_buffer;
     static Sein::Direct3D12::IndexBuffer index_buffer;
 
     /**
@@ -86,7 +86,9 @@ namespace App
           { { -0.25f, -0.25f, 0.0f },{ 0.0f, 1.0f, 0.0f },{ 0.0f, 1.0f } },
         };
         std::uint32_t indices[] = { 0, 1, 2 };
-        vertex_buffer.Create(const_cast<ID3D12Device*>(&device_->GetDevice()), sizeof(Vertex) * 3, sizeof(Vertex), &vertices);
+
+        vertex_buffer = Sein::Direct3D12::IVertexBuffer::Create(const_cast<ID3D12Device*>(&device_->GetDevice()), sizeof(Vertex) * 3);
+        vertex_buffer->Map(sizeof(Vertex), &vertices);
         index_buffer.Create(const_cast<ID3D12Device*>(&device_->GetDevice()), sizeof(std::uint32_t) * 3, &indices, DXGI_FORMAT_R32_UINT);
       }
 
@@ -175,7 +177,7 @@ namespace App
 
           // TODO:削除
           store_command_list_->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-          store_command_list_->SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
+          store_command_list_->SetVertexBuffers(0, 1, &(vertex_buffer->GetView()));
           store_command_list_->SetIndexBuffer(&(index_buffer.GetView()));
           device_->Render(store_command_list_.get(), 3, 1);
 

@@ -43,7 +43,7 @@ cbuffer ConstantBuffer : register(b0)
  */
 VSOutput main(VSInput input)
 {
-    VSOutput result;
+    VSOutput result = (VSOutput) 0;
 
     float4 pos = float4(input.position, 1.0);
 

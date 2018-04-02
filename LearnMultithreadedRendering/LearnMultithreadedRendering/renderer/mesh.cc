@@ -61,7 +61,7 @@ namespace App
        *  @param  vertex_buffer:頂点バッファ
        *  @param  vertex_count:頂点数
        */
-      void SetVertexBuffer(Sein::Direct3D12::VertexBuffer* const vertex_buffer, const std::uint32_t vertex_count)
+      void SetVertexBuffer(Sein::Direct3D12::IVertexBuffer* const vertex_buffer, const std::uint32_t vertex_count)
       {
         vertex_buffer_.reset(vertex_buffer);
         vertex_count_ = vertex_count;
@@ -82,7 +82,7 @@ namespace App
        *  @brief  頂点バッファを取得する
        *  @return 頂点バッファ
        */
-      const Sein::Direct3D12::VertexBuffer& GetVertexBuffer() const override
+      const Sein::Direct3D12::IVertexBuffer& GetVertexBuffer() const override
       {
         return *vertex_buffer_;
       }
@@ -106,10 +106,10 @@ namespace App
       }
 
     private:
-      std::unique_ptr<Sein::Direct3D12::VertexBuffer> vertex_buffer_; ///< 頂点バッファ
-      std::unique_ptr<Sein::Direct3D12::IndexBuffer> index_buffer_;   ///< インデックスバッファ
-      std::uint32_t vertex_count_;                                    ///< 頂点数
-      std::uint32_t index_count_;                                     ///< インデックス数
+      std::unique_ptr<Sein::Direct3D12::IVertexBuffer> vertex_buffer_;  ///< 頂点バッファ
+      std::unique_ptr<Sein::Direct3D12::IndexBuffer> index_buffer_;     ///< インデックスバッファ
+      std::uint32_t vertex_count_;                                      ///< 頂点数
+      std::uint32_t index_count_;                                       ///< インデックス数
     };
   };
 
@@ -125,13 +125,13 @@ namespace App
   std::shared_ptr<IMesh> IMesh::Create(Sein::Direct3D12::Device* device, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count)
   {
     auto mesh = std::make_shared<Mesh>();
-    auto vertex_buffer = new Sein::Direct3D12::VertexBuffer();
+    auto vertex_buffer = Sein::Direct3D12::IVertexBuffer::Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(Vertex) * vertex_count).release();
     auto index_buffer = new Sein::Direct3D12::IndexBuffer();
 
     mesh->SetVertexBuffer(vertex_buffer, vertex_count);
     mesh->SetIndexBuffer(index_buffer, index_count);
         
-    vertex_buffer->Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(Vertex) * vertex_count, sizeof(Vertex), vertices);
+    vertex_buffer->Map(sizeof(Vertex), vertices);
     index_buffer->Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(std::uint32_t) * index_count, indices, DXGI_FORMAT_R32_UINT);
     
     return mesh;
