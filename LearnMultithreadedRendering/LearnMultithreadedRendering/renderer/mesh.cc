@@ -72,7 +72,7 @@ namespace App
        *  @param  index_buffer:インデックバッファ
        *  @param  index_count:インデックス数
        */
-      void SetIndexBuffer(Sein::Direct3D12::IndexBuffer* const index_buffer, const std::uint32_t index_count)
+      void SetIndexBuffer(Sein::Direct3D12::IIndexBuffer* const index_buffer, const std::uint32_t index_count)
       {
         index_buffer_.reset(index_buffer);
         index_count_ = index_count;
@@ -91,7 +91,7 @@ namespace App
        *  @brief  インデックスバッファを取得する
        *  @return インデックスバッファ
        */
-      const Sein::Direct3D12::IndexBuffer& GetIndexBuffer() const override
+      const Sein::Direct3D12::IIndexBuffer& GetIndexBuffer() const override
       {
         return *index_buffer_;
       }
@@ -107,7 +107,7 @@ namespace App
 
     private:
       std::unique_ptr<Sein::Direct3D12::IVertexBuffer> vertex_buffer_;  ///< 頂点バッファ
-      std::unique_ptr<Sein::Direct3D12::IndexBuffer> index_buffer_;     ///< インデックスバッファ
+      std::unique_ptr<Sein::Direct3D12::IIndexBuffer> index_buffer_;    ///< インデックスバッファ
       std::uint32_t vertex_count_;                                      ///< 頂点数
       std::uint32_t index_count_;                                       ///< インデックス数
     };
@@ -126,13 +126,13 @@ namespace App
   {
     auto mesh = std::make_shared<Mesh>();
     auto vertex_buffer = Sein::Direct3D12::IVertexBuffer::Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(Vertex) * vertex_count).release();
-    auto index_buffer = new Sein::Direct3D12::IndexBuffer();
+    auto index_buffer = Sein::Direct3D12::IIndexBuffer::Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(std::uint32_t) * index_count).release();
 
     mesh->SetVertexBuffer(vertex_buffer, vertex_count);
     mesh->SetIndexBuffer(index_buffer, index_count);
         
     vertex_buffer->Map(sizeof(Vertex), vertices);
-    index_buffer->Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(std::uint32_t) * index_count, indices, DXGI_FORMAT_R32_UINT);
+    index_buffer->Map(DXGI_FORMAT_R32_UINT, indices);
     
     return mesh;
   }

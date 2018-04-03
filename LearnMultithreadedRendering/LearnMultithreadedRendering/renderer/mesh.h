@@ -60,7 +60,7 @@ namespace App
      *  @brief  インデックスバッファを取得する
      *  @return インデックスバッファ
      */
-    virtual const Sein::Direct3D12::IndexBuffer& GetIndexBuffer() const = 0;
+    virtual const Sein::Direct3D12::IIndexBuffer& GetIndexBuffer() const = 0;
 
     /**
      *  @brief  頂点インデックスの個数を取得する
