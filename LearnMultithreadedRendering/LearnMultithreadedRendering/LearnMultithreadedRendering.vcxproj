@@ -117,7 +117,7 @@
   <ItemGroup>
     <ClCompile Include="learn_multithreaded_rendering.cc" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="renderer\mesh.cc" />
+    <ClCompile Include="model\mesh.cc" />
     <ClCompile Include="renderer\renderer.cc" />
   </ItemGroup>
   <ItemGroup>
@@ -131,7 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\renderer.h" />
-    <ClInclude Include="renderer\mesh.h" />
+    <ClInclude Include="model\mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\pixel.hlsl">

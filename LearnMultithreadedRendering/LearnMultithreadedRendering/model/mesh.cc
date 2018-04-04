@@ -7,6 +7,7 @@
  */
 
  // include
+#include <DirectXMath.h>
 #include "mesh.h"
 
 namespace App
@@ -115,25 +116,57 @@ namespace App
 
   /**
    *  @brief  メッシュを作成する
-   *  @param  device:デバイス
+   *  @param  renderer:レンダラー
    *  @param  vertices:頂点配列へのポインタ
    *  @param  vertex_count:頂点数
    *  @param  indices:頂点インデックス配列へのポインタ
    *  @param  index_count:頂点インデックス数
    *  @return メッシュ用インターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<IMesh> IMesh::Create(Sein::Direct3D12::Device* device, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count)
+  std::shared_ptr<IMesh> IMesh::Create(IRenderer* const renderer, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count)
   {
     auto mesh = std::make_shared<Mesh>();
-    auto vertex_buffer = Sein::Direct3D12::IVertexBuffer::Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(Vertex) * vertex_count).release();
-    auto index_buffer = Sein::Direct3D12::IIndexBuffer::Create(const_cast<ID3D12Device*>(&device->GetDevice()), sizeof(std::uint32_t) * index_count).release();
+    auto vertex_buffer = renderer->CreateVertexBuffer(sizeof(Vertex) * vertex_count).release();
+    auto index_buffer = renderer->CreateIndexBuffer(sizeof(std::uint32_t) * index_count).release();
 
     mesh->SetVertexBuffer(vertex_buffer, vertex_count);
     mesh->SetIndexBuffer(index_buffer, index_count);
-        
+
     vertex_buffer->Map(sizeof(Vertex), vertices);
     index_buffer->Map(DXGI_FORMAT_R32_UINT, indices);
-    
+
+    return mesh;
+  }
+
+  /**
+   *  @brief  三角形(1ポリゴン)のメッシュを作成する
+   *  @param  renderer:レンダラー
+   *  @param  positions:頂点座標の配列
+   *  @return メッシュ用インターフェイスへのシェアードポインタ
+   */
+  std::shared_ptr<IMesh> IMesh::CreateForTriangle(IRenderer* const renderer, DirectX::XMFLOAT3 positions[3])
+  {
+    Vertex vertices[] = {
+      { {},{ 0.0f, 1.0f, 0.0f },{ 0.0f, 1.0f } },
+    { {},{ 0.0f, 1.0f, 0.0f },{ 0.0f, 1.0f } },
+    { {},{ 0.0f, 1.0f, 0.0f },{ 0.0f, 1.0f } },
+    };
+    std::uint32_t indices[] = { 0, 1, 2 };
+
+    vertices[0].position = positions[0];
+    vertices[1].position = positions[1];
+    vertices[2].position = positions[2];
+
+    auto mesh = std::make_shared<Mesh>();
+    auto vertex_buffer = renderer->CreateVertexBuffer(sizeof(Vertex) * 3).release();
+    auto index_buffer = renderer->CreateIndexBuffer(sizeof(std::uint32_t) * 3).release();
+
+    mesh->SetVertexBuffer(vertex_buffer, 3);
+    mesh->SetIndexBuffer(index_buffer, 3);
+
+    vertex_buffer->Map(sizeof(Vertex), vertices);
+    index_buffer->Map(DXGI_FORMAT_R32_UINT, indices);
+
     return mesh;
   }
 };

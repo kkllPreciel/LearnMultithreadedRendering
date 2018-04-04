@@ -39,7 +39,7 @@
     <ClCompile Include="renderer\renderer.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\mesh.cc">
+    <ClCompile Include="model\mesh.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -62,7 +62,7 @@
     <ClInclude Include="renderer\renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\mesh.h">
+    <ClInclude Include="model\mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
