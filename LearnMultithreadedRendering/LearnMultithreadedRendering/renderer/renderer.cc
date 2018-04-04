@@ -102,6 +102,26 @@ namespace App
         processing_ = true;
         condition_.notify_all();
       }
+
+      /**
+       *  @brief  頂点バッファを作成する
+       *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
+       *  @return 頂点バッファへのユニークポインタ
+       */
+      std::unique_ptr<Sein::Direct3D12::IVertexBuffer> CreateVertexBuffer(const std::uint32_t size_in_bytes) override
+      {
+        return device_->CreateVertexBuffer(size_in_bytes);
+      }
+      
+      /**
+       *  @brief  頂点インデックスバッファを作成する
+       *  @param  size_in_bytes:頂点インデックスバッファのサイズ(頂点インデックスサイズ * 頂点インデックス数)
+       *  @return 頂点インデックスバッファのユニークID
+       */
+      std::unique_ptr<Sein::Direct3D12::IIndexBuffer> CreateIndexBuffer(const std::uint32_t size_in_bytes) override
+      {
+        return device_->CreateIndexBuffer(size_in_bytes);
+      }
       
       /**
        *  @brief  画面を更新する
