@@ -10,6 +10,7 @@
 
 // include
 #include <memory>
+#include <DirectXMath.h>
 #include <Sein/Direct3D12/vertex_buffer.h>
 #include <Sein/Direct3D12/index_buffer.h>
 
@@ -32,11 +33,6 @@ namespace App
     virtual ~IRenderer() = default;
 
     /**
-     *  @brief  実行する
-     */
-    virtual void Execute() = 0;
-
-    /**
      *  @brief  頂点バッファを作成する
      *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
      *  @return 頂点バッファへのユニークポインタ
@@ -49,6 +45,20 @@ namespace App
      *  @return 頂点インデックスバッファのユニークID
      */
     virtual std::unique_ptr<Sein::Direct3D12::IIndexBuffer> CreateIndexBuffer(const std::uint32_t size_in_bytes) = 0;
+
+    /**
+     *  @brief  描画オブジェクトの登録を行う
+     *  @param  vertex_buffer:描画オブジェクトが使用する頂点バッファ
+     *  @param  index_buffer:描画オブジェクトが使用する頂点インデックスバッファ
+     *  @param  index_count:頂点インデックスの個数
+     *  @param  matrix:描画オブジェクトのワールド空間行列
+     */
+    virtual void Register(const Sein::Direct3D12::IVertexBuffer& vertex_buffer, const Sein::Direct3D12::IIndexBuffer& index_buffer, const std::uint32_t index_count, const DirectX::XMFLOAT4X4& matrix) = 0;
+
+    /**
+     *  @brief  実行する
+     */
+    virtual void Execute() = 0;
 
     /**
      *  @brief  画面を更新する

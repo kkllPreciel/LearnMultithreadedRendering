@@ -36,6 +36,28 @@ namespace App
     static std::unique_ptr<Sein::Direct3D12::IIndexBuffer> index_buffer;
 
     /**
+     *  @brief  描画オブジェクト用クラス
+     */
+    class RenderObject
+    {
+    public:
+      RenderObject(const Sein::Direct3D12::IVertexBuffer& vertex_buffer, const Sein::Direct3D12::IIndexBuffer& index_buffer, const std::uint32_t index_count, const DirectX::XMFLOAT4X4& matrix)
+        : vertex_buffer_(vertex_buffer), index_buffer_(index_buffer), index_count_(index_count), matrix_(matrix)
+      {
+
+      }
+
+      const Sein::Direct3D12::IVertexBuffer& vertex_buffer_;
+      const Sein::Direct3D12::IIndexBuffer& index_buffer_;
+      const std::uint32_t index_count_;
+      const DirectX::XMFLOAT4X4& matrix_;
+    };
+
+
+
+
+
+    /**
      *  @brief  レンダラー用クラス
      */
     class Renderer final : public IRenderer
@@ -44,7 +66,9 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      Renderer() : device_(nullptr), execute_command_list_(nullptr), store_command_list_(nullptr), thread_(nullptr), terminate_(false), processing_(false)
+      Renderer() : device_(nullptr), execute_command_list_(nullptr), store_command_list_(nullptr),
+        thread_(nullptr), terminate_(false), processing_(false),
+        execute_render_object_list_(nullptr), store_render_object_list_(nullptr)
       {
 
       }
@@ -73,6 +97,10 @@ namespace App
         execute_command_list_ = device_->CreateCommandList(D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
         store_command_list_ = device_->CreateCommandList(D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
 
+        // レンダーオブジェクトキューの作成
+        execute_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
+        store_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
+
         // スレッドの作成
         terminate_ = false;
         processing_ = false;
@@ -94,16 +122,6 @@ namespace App
       }
 
       /**
-       *  @brief  実行する
-       */
-      void Execute() override
-      {
-        // レンダリングスレッドを起動する
-        processing_ = true;
-        condition_.notify_all();
-      }
-
-      /**
        *  @brief  頂点バッファを作成する
        *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
        *  @return 頂点バッファへのユニークポインタ
@@ -121,6 +139,29 @@ namespace App
       std::unique_ptr<Sein::Direct3D12::IIndexBuffer> CreateIndexBuffer(const std::uint32_t size_in_bytes) override
       {
         return device_->CreateIndexBuffer(size_in_bytes);
+      }
+
+      /**
+       *  @brief  描画オブジェクトの登録を行う
+       *  @param  vertex_buffer:描画オブジェクトが使用する頂点バッファ
+       *  @param  index_buffer:描画オブジェクトが使用する頂点インデックスバッファ
+       *  @param  index_count:頂点インデックスの個数
+       *  @param  matrix:描画オブジェクトのワールド空間行列
+       */
+      void Register(const Sein::Direct3D12::IVertexBuffer& vertex_buffer, const Sein::Direct3D12::IIndexBuffer& index_buffer, const std::uint32_t index_count, const DirectX::XMFLOAT4X4& matrix) override
+      {
+        // TODO:swapのタイミングで実行されても問題ないように
+        store_render_object_list_->emplace_back(RenderObject(vertex_buffer, index_buffer, index_count, matrix));
+      }
+
+      /**
+       *  @brief  実行する
+       */
+      void Execute() override
+      {
+        // レンダリングスレッドを起動する
+        processing_ = true;
+        condition_.notify_all();
       }
       
       /**
@@ -153,6 +194,9 @@ namespace App
           thread_.reset();
         }
 
+        store_render_object_list_.reset();
+        execute_render_object_list_.reset();
+
         store_command_list_.reset();
         execute_command_list_.reset();
         device_.reset();
@@ -182,7 +226,28 @@ namespace App
           // 前フレームで作成したコマンドのリストを実行する(GPU)
           device_->ExecuteCommandLists(execute_command_list_.get());
 
+          // 実行用描画オブジェクトのキューと作成用描画オブジェクトのキューを交換する
+          execute_render_object_list_.swap(store_render_object_list_);
+
+          // TODO:BeginScene、EndScene内のリソース指定を変更できるように
+          auto buffer_index = device_->GetNextBackBufferIndex();
+          device_->BeginScene(store_command_list_.get(), buffer_index);
+
           // TODO:前フレームのゲーム情報からコマンドのリストを作成する(キューに格納されている予定)
+
+          // ドローコール
+          for (auto& render_object : *execute_render_object_list_)
+          {
+            auto& vertex_buffer = const_cast<Sein::Direct3D12::IVertexBuffer&>(render_object.vertex_buffer_);
+            auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(render_object.index_buffer_);
+            auto index_count = render_object.index_count_;
+            store_command_list_->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            store_command_list_->SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
+            store_command_list_->SetIndexBuffer(&(index_buffer.GetView()));
+            device_->Render(store_command_list_.get(), index_count, 1);
+          }
+
+          device_->EndScene(store_command_list_.get(), buffer_index);
 
           // オブジェクトの描画に必要なもの
           // ワールド座標
@@ -191,19 +256,6 @@ namespace App
           // メッシュ
           // ライト
           // ボーン行列
-
-          // TODO:BeginScene、EndScene内のリソース指定を変更できるように
-          auto buffer_index = device_->GetNextBackBufferIndex();
-          device_->BeginScene(store_command_list_.get(), buffer_index);
-
-          // TODO:削除
-          store_command_list_->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-          store_command_list_->SetVertexBuffers(0, 1, &(vertex_buffer->GetView()));
-          store_command_list_->SetIndexBuffer(&(index_buffer->GetView()));
-          device_->Render(store_command_list_.get(), 3, 1);
-
-          device_->EndScene(store_command_list_.get(), buffer_index);
-
 
           // スレッドの処理終了通知
           processing_ = false;
@@ -220,6 +272,8 @@ namespace App
       std::unique_ptr<Sein::Direct3D12::Device> device_;                      ///< デバイス
       std::shared_ptr<Sein::Direct3D12::ICommandList> execute_command_list_;  ///< 実行用コマンドリスト
       std::shared_ptr<Sein::Direct3D12::ICommandList> store_command_list_;    ///< 作成用コマンドリスト
+      std::unique_ptr<std::vector<RenderObject>> execute_render_object_list_; ///< 実行用描画オブジェクトのリスト
+      std::unique_ptr<std::vector<RenderObject>> store_render_object_list_;   ///< 作成用描画オブジェクトのリスト
     };
   };
 
