@@ -1,4 +1,8 @@
 #include "learn_multithreaded_rendering.h"
+#include "model/mesh.h"
+
+static std::shared_ptr<App::IMesh> mesh;
+static DirectX::XMFLOAT4X4 matrix;
 
 /**
  *  @brief  コンストラクタ
@@ -16,6 +20,16 @@ LearnMultithreadedRendering::LearnMultithreadedRendering(QWidget *parent)
     timer = std::make_unique<QTimer>();
     connect(timer.get(), SIGNAL(timeout()), this, SLOT(MainLoop()));
     timer->start(1000 / 60);
+
+
+    // TODO:削除
+    DirectX::XMFLOAT3 positions[3] = {
+      { 0.0f, 1.0f, 0.0f},
+      { 1.0f, 0.0f, 0.0f },
+      { -1.0f, 0.0f, 0.0f },
+    };
+    mesh = App::IMesh::CreateForTriangle(renderer_.get(), positions);
+    DirectX::XMStoreFloat4x4(&matrix, DirectX::XMMatrixIdentity());
 }
 
 /**
@@ -45,6 +59,7 @@ void LearnMultithreadedRendering::MainLoop()
   renderer_->Execute();
 
   // TODO:ゲームオブジェクトの更新
+  renderer_->Register(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetIndexCount(), matrix);
 
   // レンダリング終了待ち(GPUの処理終了待ち)
   renderer_->Present();
