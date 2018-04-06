@@ -13,28 +13,10 @@
 #include <Sein/Direct3D12/direct3d12_device.h>
 #include "renderer/renderer.h"
 
-
-// TODO:削除
-#include <Sein/Direct3D12/vertex_buffer.h>
-#include <Sein/Direct3D12/index_buffer.h>
-
 namespace App
 {
   namespace
   {
-    // TODO:削除
-    // アラインメントを1バイトに設定
-#pragma pack(push, 1)
-    struct Vertex
-    {
-      DirectX::XMFLOAT3 position; ///< 座標
-      DirectX::XMFLOAT3 normal;   ///< 法線ベクトル
-      DirectX::XMFLOAT2 texcoord; ///< テクスチャUV座標
-    };
-#pragma pack(pop)
-    static std::unique_ptr<Sein::Direct3D12::IVertexBuffer> vertex_buffer;
-    static std::unique_ptr<Sein::Direct3D12::IIndexBuffer> index_buffer;
-
     /**
      *  @brief  描画オブジェクト用クラス
      */
@@ -52,10 +34,6 @@ namespace App
       const std::uint32_t index_count_;
       const DirectX::XMFLOAT4X4& matrix_;
     };
-
-
-
-
 
     /**
      *  @brief  レンダラー用クラス
@@ -105,20 +83,6 @@ namespace App
         terminate_ = false;
         processing_ = false;
         thread_ = std::make_unique<std::thread>(&Renderer::ThreadMain, this);
-
-
-        // TODO削除
-        Vertex vertices[] = {
-          { { 0.0f, 0.25f, 0.0f },{ 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f } },
-          { { 0.25f, -0.25f, 0.0f },{ 0.0f, 1.0f, 0.0f },{ 0.0f, 1.0f } },
-          { { -0.25f, -0.25f, 0.0f },{ 0.0f, 1.0f, 0.0f },{ 0.0f, 1.0f } },
-        };
-        std::uint32_t indices[] = { 0, 1, 2 };
-
-        vertex_buffer = Sein::Direct3D12::IVertexBuffer::Create(const_cast<ID3D12Device*>(&device_->GetDevice()), sizeof(Vertex) * 3);
-        vertex_buffer->Map(sizeof(Vertex), &vertices);
-        index_buffer = Sein::Direct3D12::IIndexBuffer::Create(const_cast<ID3D12Device*>(&device_->GetDevice()), sizeof(std::uint32_t) * 3);
-        index_buffer->Map(DXGI_FORMAT_R32_UINT, &indices);
       }
 
       /**
