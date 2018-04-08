@@ -199,6 +199,9 @@ namespace App
 
           // TODO:前フレームのゲーム情報からコマンドのリストを作成する(キューに格納されている予定)
 
+          // TODO:ドローコールバッチング、ダイナミックバッチング
+          // TODO:draw in direct
+
           // ドローコール
           for (auto& render_object : *execute_render_object_list_)
           {
