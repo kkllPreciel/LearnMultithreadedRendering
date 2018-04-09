@@ -36,6 +36,19 @@ namespace App
     };
 
     /**
+     *  @brief  定数バッファ用クラス
+     */
+    class ConstantBuffer
+    {
+    public:
+#pragma pack(push, 1)
+      DirectX::XMFLOAT4X4 world_;
+      DirectX::XMFLOAT4X4 view_;
+      DirectX::XMFLOAT4X4 projection_;
+#pragma pack(pop)
+    };
+
+    /**
      *  @brief  レンダラー用クラス
      */
     class Renderer final : public IRenderer
