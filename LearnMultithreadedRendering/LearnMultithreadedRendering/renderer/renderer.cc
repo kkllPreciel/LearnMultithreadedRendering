@@ -96,6 +96,12 @@ namespace App
         terminate_ = false;
         processing_ = false;
         thread_ = std::make_unique<std::thread>(&Renderer::ThreadMain, this);
+
+        // 定数バッファの作成
+        constant_buffer_ = device_->CreateConstantBuffer(sizeof(ConstantBuffer));
+        DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.world_), DirectX::XMMatrixIdentity());
+        DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.view_), DirectX::XMMatrixIdentity());
+        DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.projection_), DirectX::XMMatrixIdentity());
       }
 
       /**
@@ -221,6 +227,8 @@ namespace App
             auto& vertex_buffer = const_cast<Sein::Direct3D12::IVertexBuffer&>(render_object.vertex_buffer_);
             auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(render_object.index_buffer_);
             auto index_count = render_object.index_count_;
+            constant_buffer_instance_.world_ = render_object.matrix_;
+            constant_buffer_->Map(sizeof(ConstantBuffer), &(constant_buffer_instance_));
             store_command_list_->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             store_command_list_->SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
             store_command_list_->SetIndexBuffer(&(index_buffer.GetView()));
@@ -254,6 +262,10 @@ namespace App
       std::shared_ptr<Sein::Direct3D12::ICommandList> store_command_list_;    ///< 作成用コマンドリスト
       std::unique_ptr<std::vector<RenderObject>> execute_render_object_list_; ///< 実行用描画オブジェクトのリスト
       std::unique_ptr<std::vector<RenderObject>> store_render_object_list_;   ///< 作成用描画オブジェクトのリスト
+
+
+      ConstantBuffer constant_buffer_instance_;                               ///< コンスタントバッファの実体
+      std::unique_ptr<Sein::Direct3D12::IConstantBuffer> constant_buffer_;    ///< 定数バッファ
     };
   };
 

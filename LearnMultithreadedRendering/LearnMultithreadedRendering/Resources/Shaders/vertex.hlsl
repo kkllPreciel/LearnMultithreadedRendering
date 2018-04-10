@@ -34,6 +34,7 @@ StructuredBuffer<InstanceBuffer> cbv : register(t0); ///< インスタンス毎のデータ
  */
 cbuffer ConstantBuffer : register(b0)
 {
+    float4x4 world;         ///< ワールド行列(列優先行列)
     float4x4 view;          ///< ビュー行列(列優先行列)
     float4x4 projection;    ///< プロジェクション行列(列優先行列)
 };
@@ -48,8 +49,9 @@ VSOutput main(VSInput input)
     float4 pos = float4(input.position, 1.0);
 
     //pos = mul(cbv[input.id].world, pos);
-    //pos = mul(view, pos);
-    //pos = mul(projection, pos);
+    pos = mul(world, pos);
+    pos = mul(view, pos);
+    pos = mul(projection, pos);
 
     result.position = pos;
     result.color = float4(1.0, 1.0, 1.0, 1.0);

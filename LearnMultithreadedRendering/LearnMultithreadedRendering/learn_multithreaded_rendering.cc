@@ -29,7 +29,7 @@ LearnMultithreadedRendering::LearnMultithreadedRendering(QWidget *parent)
       { -1.0f, 0.0f, 0.0f },
     };
     mesh = App::IMesh::CreateForTriangle(renderer_.get(), positions);
-    DirectX::XMStoreFloat4x4(&matrix, DirectX::XMMatrixIdentity());
+    DirectX::XMStoreFloat4x4(&matrix, DirectX::XMMatrixScaling(0.1f, 0.1f, 0.1f));
 }
 
 /**
