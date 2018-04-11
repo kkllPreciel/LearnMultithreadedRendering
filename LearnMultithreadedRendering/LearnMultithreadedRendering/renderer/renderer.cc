@@ -138,6 +138,19 @@ namespace App
       }
 
       /**
+       *  @brief  ビューを登録する
+       *  @param  view_id:ビューのID
+       *  @param  view_matrix:ビュー行列
+       *  @param  projection_matrix:プロジェクション行列
+       *  @param  viewport:ビューポート矩形の設定
+       *  @param  scissor:シザー矩形の設定
+       */
+      void RegisterView(const std::uint32_t view_id, const DirectX::XMFLOAT4X4& view_matrix, const DirectX::XMFLOAT4X4& projection_matrix, const D3D12_VIEWPORT viewport, const D3D12_RECT scissor) override
+      {
+        // TODO:ビューの登録
+      }
+
+      /**
        *  @brief  実行する
        */
       void Execute() override

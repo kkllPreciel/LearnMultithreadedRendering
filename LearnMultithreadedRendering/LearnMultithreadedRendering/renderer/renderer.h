@@ -56,6 +56,16 @@ namespace App
     virtual void Register(const Sein::Direct3D12::IVertexBuffer& vertex_buffer, const Sein::Direct3D12::IIndexBuffer& index_buffer, const std::uint32_t index_count, const DirectX::XMFLOAT4X4& matrix) = 0;
 
     /**
+     *  @brief  ビューを登録する
+     *  @param  view_id:ビューのID
+     *  @param  view_matrix:ビュー行列
+     *  @param  projection_matrix:プロジェクション行列
+     *  @param  viewport:ビューポート矩形の設定
+     *  @param  scissor:シザー矩形の設定
+     */
+    virtual void RegisterView(const std::uint32_t view_id, const DirectX::XMFLOAT4X4& view_matrix, const DirectX::XMFLOAT4X4& projection_matrix, const D3D12_VIEWPORT viewport, const D3D12_RECT scissor) = 0;
+
+    /**
      *  @brief  実行する
      */
     virtual void Execute() = 0;
