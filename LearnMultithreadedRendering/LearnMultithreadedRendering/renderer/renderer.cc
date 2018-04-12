@@ -36,6 +36,19 @@ namespace App
     };
 
     /**
+     *  @brief  ビュー用クラス
+     */
+    class View
+    {
+    public:
+      std::uint32_t view_id_;
+      DirectX::XMFLOAT4X4 view_matrix_;
+      DirectX::XMFLOAT4X4 projection_matrix_;
+      D3D12_VIEWPORT viewport_;
+      D3D12_RECT scissor_;
+    };
+
+    /**
      *  @brief  定数バッファ用クラス
      */
     class ConstantBuffer
