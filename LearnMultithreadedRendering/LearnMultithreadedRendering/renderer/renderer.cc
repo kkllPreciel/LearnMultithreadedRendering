@@ -116,8 +116,11 @@ namespace App
         DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.view_), DirectX::XMMatrixIdentity());
         DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.projection_), DirectX::XMMatrixIdentity());
 
-        // ビューリストの作成
-        view_list_ = std::make_unique<std::vector<View>>();
+        // ビューの作成
+        view_ = std::make_unique<View>();
+        view_->view_id_ = 1;
+        DirectX::XMStoreFloat4x4(&(view_->view_matrix_), DirectX::XMMatrixRotationZ(DirectX::XM_PI / 2));
+        DirectX::XMStoreFloat4x4(&(view_->projection_matrix_), DirectX::XMMatrixIdentity());
       }
 
       /**
@@ -163,15 +166,14 @@ namespace App
        */
       void RegisterView(const std::uint32_t view_id, const DirectX::XMFLOAT4X4& view_matrix, const DirectX::XMFLOAT4X4& projection_matrix, const D3D12_VIEWPORT viewport, const D3D12_RECT scissor) override
       {
-        // ビューの登録
-        View view;
-        view.view_id_ = view_id;
-        view.view_matrix_ = view_matrix;
-        view.projection_matrix_ = projection_matrix;
-        view.viewport_ = viewport;
-        view.scissor_ = scissor;
-        view_list_->emplace_back(view);
+        assert(!view_);
 
+        // ビューの作成
+        view_->view_id_ = view_id;
+        view_->view_matrix_ = view_matrix;
+        view_->projection_matrix_ = projection_matrix;
+        view_->viewport_ = viewport;
+        view_->scissor_ = scissor;
       }
 
       /**
@@ -257,6 +259,14 @@ namespace App
 
           // TODO:ドローコールバッチング、ダイナミックバッチング
           // TODO:draw in direct
+          
+          // 定数バッファの設定(ビュー、プロジェクション)
+          constant_buffer_instance_.view_ = view_->view_matrix_;
+          constant_buffer_instance_.projection_ = view_->projection_matrix_;
+
+          // TODO:ビューポートの設定
+          // TODO:シザー矩形の設定
+          
 
           // ドローコール
           for (auto& render_object : *execute_render_object_list_)
@@ -304,7 +314,7 @@ namespace App
       ConstantBuffer constant_buffer_instance_;                               ///< コンスタントバッファの実体
       std::unique_ptr<Sein::Direct3D12::IConstantBuffer> constant_buffer_;    ///< 定数バッファ
 
-      std::unique_ptr<std::vector<View>> view_list_;                          ///< ビューのリスト
+      std::unique_ptr<View> view_;                                            ///< ビュー
     };
   };
 
