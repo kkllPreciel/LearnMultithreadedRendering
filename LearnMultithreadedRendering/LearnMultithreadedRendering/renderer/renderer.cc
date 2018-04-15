@@ -7,11 +7,12 @@
  */
 
  // include
+#include "renderer/renderer.h"
 #include <thread>
 #include <atomic>
 #include <mutex>
 #include <Sein/Direct3D12/direct3d12_device.h>
-#include "renderer/renderer.h"
+#include "renderer/double_command_list.h"
 
 namespace App
 {
@@ -70,7 +71,7 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      Renderer() : device_(nullptr), execute_command_list_(nullptr), store_command_list_(nullptr),
+      Renderer() : device_(nullptr), double_command_list_(nullptr),
         thread_(nullptr), terminate_(false), processing_(false),
         execute_render_object_list_(nullptr), store_render_object_list_(nullptr)
       {
@@ -98,8 +99,7 @@ namespace App
         device_->Create(handle, width, height);
 
         // コマンドリストの作成
-        execute_command_list_ = device_->CreateCommandList(D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
-        store_command_list_ = device_->CreateCommandList(D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
+        double_command_list_ = IDoubleCommandList::Create(device_.get(), D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
 
         // レンダーオブジェクトキューの作成
         execute_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
@@ -219,8 +219,7 @@ namespace App
         store_render_object_list_.reset();
         execute_render_object_list_.reset();
 
-        store_command_list_.reset();
-        execute_command_list_.reset();
+        double_command_list_.reset();
         device_.reset();
       }
 
@@ -243,17 +242,19 @@ namespace App
           }
 
           // 実行用コマンドリストと作成用コマンドリストを交換する
-          execute_command_list_.swap(store_command_list_);
+          double_command_list_->Swap();
 
           // 前フレームで作成したコマンドのリストを実行する(GPU)
-          device_->ExecuteCommandLists(execute_command_list_.get());
+          device_->ExecuteCommandLists(const_cast<Sein::Direct3D12::ICommandList*>(&(double_command_list_->GetFrontCommandList())));
+
+          decltype(auto) store_command_list = double_command_list_->GetBackCommandList();
 
           // 実行用描画オブジェクトのキューと作成用描画オブジェクトのキューを交換する
           execute_render_object_list_.swap(store_render_object_list_);
 
           // TODO:BeginScene、EndScene内のリソース指定を変更できるように
           auto buffer_index = device_->GetNextBackBufferIndex();
-          device_->BeginScene(store_command_list_.get(), buffer_index);
+          device_->BeginScene(&store_command_list, buffer_index);
 
           // TODO:前フレームのゲーム情報からコマンドのリストを作成する(キューに格納されている予定)
 
@@ -276,13 +277,13 @@ namespace App
             auto index_count = render_object.index_count_;
             constant_buffer_instance_.world_ = render_object.matrix_;
             constant_buffer_->Map(sizeof(ConstantBuffer), &(constant_buffer_instance_));
-            store_command_list_->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            store_command_list_->SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
-            store_command_list_->SetIndexBuffer(&(index_buffer.GetView()));
-            device_->Render(store_command_list_.get(), index_count, 1);
+            store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
+            store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
+            device_->Render(&store_command_list, index_count, 1);
           }
 
-          device_->EndScene(store_command_list_.get(), buffer_index);
+          device_->EndScene(&store_command_list, buffer_index);
 
           // オブジェクトの描画に必要なもの
           // ワールド座標
@@ -305,8 +306,8 @@ namespace App
       std::mutex mutex_;                                                      ///< スレッド間排他処理用
       std::condition_variable condition_;                                     ///< スレッド間実行待機用
       std::unique_ptr<Sein::Direct3D12::Device> device_;                      ///< デバイス
-      std::shared_ptr<Sein::Direct3D12::ICommandList> execute_command_list_;  ///< 実行用コマンドリスト
-      std::shared_ptr<Sein::Direct3D12::ICommandList> store_command_list_;    ///< 作成用コマンドリスト
+      std::shared_ptr<App::IDoubleCommandList> double_command_list_;          ///< コマンドリスト(ダブルバッファリングする)
+
       std::unique_ptr<std::vector<RenderObject>> execute_render_object_list_; ///< 実行用描画オブジェクトのリスト
       std::unique_ptr<std::vector<RenderObject>> store_render_object_list_;   ///< 作成用描画オブジェクトのリスト
 
