@@ -118,6 +118,7 @@
     <ClCompile Include="learn_multithreaded_rendering.cc" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model\mesh.cc" />
+    <ClCompile Include="renderer\double_command_list.cc" />
     <ClCompile Include="renderer\renderer.cc" />
   </ItemGroup>
   <ItemGroup>
@@ -130,6 +131,7 @@
     <QtRcc Include="learn_multithreaded_rendering.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="renderer\double_command_list.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="model\mesh.h" />
   </ItemGroup>
