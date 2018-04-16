@@ -120,6 +120,7 @@
     <ClCompile Include="model\mesh.cc" />
     <ClCompile Include="renderer\double_command_list.cc" />
     <ClCompile Include="renderer\renderer.cc" />
+    <ClCompile Include="task\task_scheduler.cc" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="learn_multithreaded_rendering.h" />
@@ -134,6 +135,7 @@
     <ClInclude Include="renderer\double_command_list.h" />
     <ClInclude Include="renderer\renderer.h" />
     <ClInclude Include="model\mesh.h" />
+    <ClInclude Include="task\task_scheduler.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\pixel.hlsl">
