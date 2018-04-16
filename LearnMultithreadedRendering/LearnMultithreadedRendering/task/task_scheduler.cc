@@ -52,6 +52,8 @@ namespace App
         {
           task(delta_time);
         }
+
+        task_deque_.clear();
       }
       
       /**
