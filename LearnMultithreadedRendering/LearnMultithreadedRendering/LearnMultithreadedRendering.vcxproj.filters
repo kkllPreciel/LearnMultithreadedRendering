@@ -48,6 +48,9 @@
     <ClCompile Include="task\task_scheduler.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="task\task.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="learn_multithreaded_rendering.h">
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="task\task_scheduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="task\task.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
