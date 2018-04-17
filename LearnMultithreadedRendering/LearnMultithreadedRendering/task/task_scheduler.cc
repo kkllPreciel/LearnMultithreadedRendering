@@ -50,6 +50,11 @@ namespace App
       {
         for (decltype(auto) task : task_deque_)
         {
+          if (task->Finished())
+          {
+            continue;
+          }
+
           task->Execute(delta_time);
         }
 

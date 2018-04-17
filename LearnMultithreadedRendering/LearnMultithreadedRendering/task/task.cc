@@ -21,9 +21,10 @@ namespace App
     public:
       /**
        *  @brief  コンストラクタ
-       *  @param
+       *  @param  task:タスク関数
+       *  @param  dependence_task_list:タスクが依存するタスクのリスト
        */
-      Task(std::function<void(std::uint64_t)> task, std::vector<ITask*> dependence_task_list = {}) : task_(task), dependence_task_list_(dependence_task_list), finished_(false)
+      Task(std::function<void(std::uint64_t)> task, std::vector<ITask*> dependence_task_list) : task_(task), dependence_task_list_(dependence_task_list), finished_(false)
       {
 
       }
@@ -54,6 +55,8 @@ namespace App
         }
 
         task_(delta_time);
+        
+        finished_ = true;
       }
 
       /**
