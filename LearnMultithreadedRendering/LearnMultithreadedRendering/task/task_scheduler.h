@@ -11,6 +11,7 @@
 // include
 #include <memory>
 #include <functional>
+#include "task/task.h"
 
 namespace App
 {
@@ -32,9 +33,9 @@ namespace App
 
     /**
      *  @brief  タスクを登録する
-     *  @param  task:タスク関数
+     *  @param  task:タスク
      */
-    virtual void Register(std::function<void(std::uint64_t delta_time)> task) = 0;
+    virtual void Register(ITask* task) = 0;
 
     /**
      *  @brief  タスクを実行する

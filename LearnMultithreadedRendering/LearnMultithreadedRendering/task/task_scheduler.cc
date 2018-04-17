@@ -35,9 +35,9 @@ namespace App
 
       /**
        *  @brief  タスクを登録する
-       *  @param  task:タスク関数
+       *  @param  task:タスク
        */
-      void Register(std::function<void(std::uint64_t delta_time)> task) override
+      void Register(ITask* task) override
       {
         task_deque_.emplace_back(task);
       }
@@ -50,7 +50,7 @@ namespace App
       {
         for (decltype(auto) task : task_deque_)
         {
-          task(delta_time);
+          task->Execute(delta_time);
         }
 
         task_deque_.clear();
@@ -65,7 +65,7 @@ namespace App
       }
 
     private:
-      std::deque<std::function<void(std::uint64_t)>> task_deque_; ///< 実行するタスクのdeque
+      std::deque<ITask*> task_deque_; ///< 実行するタスクのdeque
     };
   };
 
