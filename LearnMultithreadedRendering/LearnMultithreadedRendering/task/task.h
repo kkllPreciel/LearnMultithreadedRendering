@@ -66,7 +66,7 @@ namespace App
      *  @brief  タスクを作成する
      *  @param  task_function:タスク関数
      *  @param  dependence_task_list:タスクが依存するタスクのリスト
-     *  @returnタスクインターフェイスへのシェアードポインタ
+     *  @return タスクインターフェイスへのシェアードポインタ
      */
     static std::shared_ptr<ITask> Create(std::function<void(std::uint64_t delta_time)> task_function, const std::vector<ITask*>& dependence_task_list);
   };
