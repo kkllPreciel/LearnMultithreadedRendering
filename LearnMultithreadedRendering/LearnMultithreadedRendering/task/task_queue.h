@@ -60,6 +60,11 @@ namespace App
     virtual ITask* Pop() = 0;
 
     /**
+     *  @brief  キューをクリアする
+     */
+    virtual void Clear() = 0;
+
+    /**
      *  @brief  タスクキューを作成する
      *  @return タスクキューインターフェイスへのシェアードポインタ
      */

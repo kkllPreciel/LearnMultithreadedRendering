@@ -72,6 +72,14 @@ namespace App
         return task_list_[index];
       }
 
+      /**
+       *  @brief  キューをクリアする
+       */
+      void Clear() override
+      {
+        task_list_.clear();
+      }
+
     private:
       std::vector<ITask*> task_list_;             ///< タスクのリスト
       std::atomic<std::uint32_t> current_index_;  ///< タスクリストの何番まで実行したかの番号
