@@ -7,8 +7,9 @@
  */
 
  // include
-#include "task_scheduler.h"
-#include <deque>
+#include "task/task_scheduler.h"
+#include "task/task_queue.h"
+#include "task/task_thread.h"
 
 namespace App
 {
@@ -20,7 +21,7 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      TaskScheduler() : task_deque_()
+      TaskScheduler() : queue_(nullptr), thread_list_({})
       {
 
       }
@@ -34,12 +35,26 @@ namespace App
       }
 
       /**
+       *  @brief  作成する
+       *  @param  num_threads:使用するスレッド数
+       */
+      void Create(const std::uint32_t num_threads)
+      {
+        queue_ = ITaskQueue::Create();
+
+        for (auto i = 0; i < num_threads; ++i)
+        {
+          thread_list_.emplace_back(ITaskThread::Create(queue_));
+        }
+      }
+
+      /**
        *  @brief  タスクを登録する
        *  @param  task:タスク
        */
       void Register(ITask* task) override
       {
-        task_deque_.emplace_back(task);
+        queue_->Push(task);
       }
       
       /**
@@ -48,17 +63,24 @@ namespace App
        */
       void Execute(std::uint64_t delta_time) override
       {
-        for (decltype(auto) task : task_deque_)
-        {
-          if (task->Finished())
-          {
-            continue;
-          }
+        queue_->MakeReady();
 
+        // スレッドの起床
+        for (auto& thread : thread_list_)
+        {
+          thread->Execute(delta_time);
+        }
+
+        // タスクの実行
+        ITask* task = nullptr;
+        while ((task = queue_->Pop()) != nullptr)
+        {
           task->Execute(delta_time);
         }
 
-        task_deque_.clear();
+        // TODO:別スレッドでタスクが実行中かもしれないので待機する
+
+        queue_->Clear();
       }
       
       /**
@@ -66,11 +88,16 @@ namespace App
        */
       void Destroy() override
       {
-        task_deque_.clear();
+        // スレッドの削除
+        for (auto& thread : thread_list_)
+        {
+          thread->Destroy();
+        }
       }
 
     private:
-      std::deque<ITask*> task_deque_; ///< 実行するタスクのdeque
+      std::shared_ptr<ITaskQueue> queue_;                     ///< 実行するタスクのキュー
+      std::vector<std::shared_ptr<ITaskThread>> thread_list_; ///< タスクスレッドのリスト
     };
   };
 
@@ -82,6 +109,9 @@ namespace App
   std::shared_ptr<ITaskScheduler> ITaskScheduler::Create(const std::uint32_t num_threads)
   {
     auto task_scheduler = std::make_shared<TaskScheduler>();
+
+    task_scheduler->Create(num_threads);
+
     return task_scheduler;
   }
 };
