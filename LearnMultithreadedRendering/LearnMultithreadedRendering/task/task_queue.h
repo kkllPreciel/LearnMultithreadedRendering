@@ -9,6 +9,7 @@
 #pragma once
 
 // include
+#include <memory>
 #include "task/task.h"
 
 namespace App
@@ -51,13 +52,13 @@ namespace App
      *  @brief  タスクを追加する
      *  @param  task:追加するタスク
      */
-    virtual void Push(ITask* task) = 0;
+    virtual void Push(std::shared_ptr<ITask> task) = 0;
 
     /**
      *  @brief  タスクを取得する
-     *  @return タスクへのポインタ
+     *  @return タスクへのシェアードポインタ
      */
-    virtual ITask* Pop() = 0;
+    virtual std::shared_ptr<ITask> Pop() = 0;
 
     /**
      *  @brief  キューをクリアする

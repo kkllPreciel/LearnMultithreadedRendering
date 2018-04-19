@@ -93,7 +93,7 @@ namespace App
             break;
           }
 
-          ITask* task = queue_->Pop();
+          std::shared_ptr<ITask> task = queue_->Pop();
           if (task == nullptr)
           {
             // タスクが存在しないので待機する

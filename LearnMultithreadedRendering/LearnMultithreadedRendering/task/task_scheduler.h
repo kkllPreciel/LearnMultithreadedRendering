@@ -35,7 +35,7 @@ namespace App
      *  @brief  タスクを登録する
      *  @param  task:タスク
      */
-    virtual void Register(ITask* task) = 0;
+    virtual void Register(std::shared_ptr<ITask> task) = 0;
 
     /**
      *  @brief  タスクを実行する

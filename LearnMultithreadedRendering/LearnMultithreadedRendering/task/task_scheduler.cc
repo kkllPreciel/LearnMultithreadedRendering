@@ -52,7 +52,7 @@ namespace App
        *  @brief  タスクを登録する
        *  @param  task:タスク
        */
-      void Register(ITask* task) override
+      void Register(std::shared_ptr<ITask> task) override
       {
         queue_->Push(task);
       }
@@ -72,7 +72,7 @@ namespace App
         }
 
         // タスクの実行
-        ITask* task = nullptr;
+        std::shared_ptr<ITask> task = nullptr;
         while ((task = queue_->Pop()) != nullptr)
         {
           task->Execute(delta_time);

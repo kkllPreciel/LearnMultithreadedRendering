@@ -49,16 +49,16 @@ namespace App
        *  @brief  タスクを追加する
        *  @param  task:追加するタスク
        */
-      void Push(ITask* task) override
+      void Push(std::shared_ptr<ITask> task) override
       {
         task_list_.emplace_back(task);
       }
   
       /**
        *  @brief  タスクを取得する
-       *  @return タスクへのポインタ
+       *  @return タスクへのシェアードポインタ
        */
-      ITask* Pop() override
+      std::shared_ptr<ITask> Pop() override
       {
         // current_index_はatomic変数なので
         // 1つのタスクが複数のスレッドで一緒に実行される事が起きない
@@ -81,8 +81,8 @@ namespace App
       }
 
     private:
-      std::vector<ITask*> task_list_;             ///< タスクのリスト
-      std::atomic<std::uint32_t> current_index_;  ///< タスクリストの何番まで実行したかの番号
+      std::vector<std::shared_ptr<ITask>> task_list_; ///< タスクのリスト
+      std::atomic<std::uint32_t> current_index_;      ///< タスクリストの何番まで実行したかの番号
     };
   };
 
