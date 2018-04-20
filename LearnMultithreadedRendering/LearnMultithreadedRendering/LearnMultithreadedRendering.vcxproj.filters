@@ -57,6 +57,9 @@
     <ClCompile Include="task\task_queue.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="task\task_group.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="learn_multithreaded_rendering.h">
@@ -93,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="task\task_queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="task\task_group.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
