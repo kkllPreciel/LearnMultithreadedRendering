@@ -8,6 +8,8 @@
 
  // include
 #include "task/task.h"
+#include <cassert>
+#include <atomic>
 
 namespace App
 {
@@ -24,7 +26,8 @@ namespace App
        *  @param  task:タスク関数
        *  @param  dependence_task_list:タスクが依存するタスクのリスト
        */
-      Task(std::function<void(std::uint64_t)> task, std::vector<ITask*> dependence_task_list) : task_(task), dependence_task_list_(dependence_task_list), finished_(false)
+      Task(std::function<void(std::uint64_t)> task, std::vector<std::shared_ptr<ITask>> dependence_task_list)
+        : task_(task), dependence_task_list_(dependence_task_list), finished_(false), executing_(false)
       {
 
       }
@@ -43,6 +46,9 @@ namespace App
        */
       void Execute(std::uint64_t delta_time) override
       {
+        assert(!executing_ && !finished_);
+        executing_ = true;
+
         for (auto task : dependence_task_list_)
         {
           if (task->Finished())
@@ -56,6 +62,7 @@ namespace App
 
         task_(delta_time);
         
+        executing_ = false;
         finished_ = true;
       }
 
@@ -63,7 +70,7 @@ namespace App
        *  @brief  依存関係にあるタスクのリストを取得する
        *  @return 依存関係にあるタスクのリスト
        */
-      const std::vector<ITask*> GetDependenceTaskList() override
+      const std::vector<std::shared_ptr<ITask>> GetDependenceTaskList() override
       {
         return dependence_task_list_;
       }
@@ -79,8 +86,13 @@ namespace App
 
     private:
       std::function<void(std::uint64_t)> task_;   ///< タスク関数
-      std::vector<ITask*> dependence_task_list_;  ///< このタスクが依存するタスクのリスト
+      std::vector<std::shared_ptr<ITask>> dependence_task_list_;  ///< このタスクが依存するタスクのリスト
       bool finished_;                             ///< 終了済みフラグ
+
+
+
+
+      std::atomic<bool> executing_;               ///< 実行中フラグ
     };
   };
 
@@ -90,7 +102,7 @@ namespace App
    *  @param  dependence_task_list:タスクが依存するタスクのリスト
    *  @return タスクインターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<ITask> ITask::Create(std::function<void(std::uint64_t delta_time)> task_function, const std::vector<ITask*>& dependence_task_list)
+  std::shared_ptr<ITask> ITask::Create(std::function<void(std::uint64_t delta_time)> task_function, const std::vector<std::shared_ptr<ITask>>& dependence_task_list)
   {
     auto task = std::make_shared<Task>(task_function, dependence_task_list);
     return task;
