@@ -42,6 +42,8 @@ namespace App
        */
       void MakeReady() override
       {
+        // TODO:タスクの依存関係順にソートする
+
         current_index_ = 0;
       }
 
@@ -60,6 +62,10 @@ namespace App
        */
       std::shared_ptr<ITask> Pop() override
       {
+        // タスクの依存関係順にソートされている筈なので、先頭から実行していく
+        // タスクグループ内のタスクが全て終了したら、次のタスクグループの処理を行う。
+        // タスクグループ内のタスクの終了待ちを行わねばならない
+
         // current_index_はatomic変数なので
         // 1つのタスクが複数のスレッドで一緒に実行される事が起きない
         std::uint32_t index = current_index_++;
