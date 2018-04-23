@@ -11,7 +11,6 @@
 // include
 #include <memory>
 #include <functional>
-#include <vector>
 
 namespace App
 {
@@ -51,12 +50,6 @@ namespace App
     virtual void Execute(std::uint64_t delta_time) = 0;
 
     /**
-     *  @brief  依存関係にあるタスクのリストを取得する
-     *  @return 依存関係にあるタスクのリスト
-     */
-    virtual const std::vector<std::shared_ptr<ITask>> GetDependenceTaskList() = 0;
-
-    /**
      *  @brief  タスクが終了したか?
      *  @return 終了フラグ
      */
@@ -65,9 +58,8 @@ namespace App
     /**
      *  @brief  タスクを作成する
      *  @param  task_function:タスク関数
-     *  @param  dependence_task_list:タスクが依存するタスクのリスト
      *  @return タスクインターフェイスへのシェアードポインタ
      */
-    static std::shared_ptr<ITask> Create(std::function<void(std::uint64_t delta_time)> task_function, const std::vector<std::shared_ptr<ITask>>& dependence_task_list);
+    static std::shared_ptr<ITask> Create(std::function<void(std::uint64_t delta_time)> task_function);
   };
 };
