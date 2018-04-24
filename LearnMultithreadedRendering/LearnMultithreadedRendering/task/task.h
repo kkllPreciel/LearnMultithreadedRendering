@@ -56,6 +56,12 @@ namespace App
     virtual bool Finished() const = 0;
 
     /**
+     *  @brief  タスク終了時のイベントに登録する
+     *  @param  function:タスク終了時に実行する関数
+     */
+    virtual void RegisterFinishEvent(std::function<void()> function) = 0;
+
+    /**
      *  @brief  タスクを作成する
      *  @param  task_function:タスク関数
      *  @return タスクインターフェイスへのシェアードポインタ

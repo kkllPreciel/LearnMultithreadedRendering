@@ -10,6 +10,7 @@
 #include "task/task.h"
 #include <cassert>
 #include <atomic>
+#include <vector>
 
 namespace App
 {
@@ -25,7 +26,7 @@ namespace App
        *  @brief  コンストラクタ
        *  @param  task:タスク関数
        */
-      Task(std::function<void(std::uint64_t)> task) : task_(task), finished_(false), executing_(false)
+      Task(std::function<void(std::uint64_t)> task) : task_(task), finished_(false), executing_(false), callback_list_({})
       {
 
       }
@@ -51,6 +52,21 @@ namespace App
         
         executing_ = false;
         finished_ = true;
+
+        // 終了イベントを通知する
+        for (auto callback : callback_list_)
+        {
+          callback();
+        }
+      }
+
+      /**
+       *  @brief  タスク終了時のイベントに登録する
+       *  @param  function:タスク終了時に実行する関数
+       */
+      void RegisterFinishEvent(std::function<void()> function) override
+      {
+        callback_list_.emplace_back(function);
       }
 
       /**
@@ -63,9 +79,10 @@ namespace App
       }
 
     private:
-      std::function<void(std::uint64_t)> task_; ///< タスク関数
-      bool finished_;                           ///< 終了済みフラグ
-      bool executing_;                          ///< 実行中フラグ
+      std::function<void(std::uint64_t)> task_;           ///< タスク関数
+      bool finished_;                                     ///< 終了済みフラグ
+      bool executing_;                                    ///< 実行中フラグ
+      std::vector<std::function<void()>> callback_list_;  ///< タスク終了時に実行する関数のリスト
     };
   };
 
