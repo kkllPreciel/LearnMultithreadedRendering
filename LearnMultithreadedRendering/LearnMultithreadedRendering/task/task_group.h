@@ -45,17 +45,33 @@ namespace App
     ITaskGroup& operator = (const ITaskGroup& other) = delete;
 
     /**
-     *  @brief  タスクグループに含まれるタスクの個数を取得する
-     *  @return タスクの個数
+     *  @brief  タスクグループが実行可能か?
+     *  @return 実行可能フラグ
      */
-    virtual const std::uint32_t GetTaskCount() const = 0;
+    virtual bool Ready() = 0;
 
     /**
-     *  @brief  指定された番号のタスクを取得する
-     *  @param  index:タスクの番号
+     *  @brief  タスクを取得する
      *  @return タスクへのシェアードポインタ
      */
-    virtual std::shared_ptr<ITask> GetTask(const std::uint32_t index) const = 0;
+    virtual std::shared_ptr<ITask> Pop() = 0;
+
+    /**
+     *  @brief  タスクグループ内の全タスクが終了したか?
+     *  @return 終了フラグ
+     */
+    virtual bool Finished() = 0;
+
+    /**
+     *  @brief  終了待ちを行う
+     */
+    virtual void Wait() = 0;
+
+    /**
+     *  @brief  タスクグループの全タスク終了時のイベントに登録する
+     *  @param  function:タスクグループの全タスク終了時に実行する関数
+     */
+    virtual void RegisterFinishEvent(std::function<void()> function) = 0;
 
     /**
      *  @brief  タスクグループを作成する
