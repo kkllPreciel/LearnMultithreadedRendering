@@ -10,6 +10,7 @@
 #include "task/task_queue.h"
 #include <vector>
 #include <atomic>
+#include <mutex>
 
 namespace App
 {
@@ -24,7 +25,7 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      TaskQueue() : task_list_({}), current_index_(0)
+      TaskQueue() : task_group_list_({}), executed_index_(0)
       {
 
       }
@@ -34,7 +35,7 @@ namespace App
        */
       ~TaskQueue()
       {
-        task_list_.clear();
+        task_group_list_.clear();
       }
 
       /**
@@ -42,18 +43,25 @@ namespace App
        */
       void MakeReady() override
       {
-        // TODO:タスクの依存関係順にソートする
+        executed_index_ = 0;
 
-        current_index_ = 0;
+        // タスクグループの終了イベントに登録する
+        for (auto task_group : task_group_list_)
+        {
+          task_group->RegisterFinishEvent([&]() {
+            ++executed_index_;
+            condition_.notify_all();
+          });
+        }
       }
 
       /**
-       *  @brief  タスクを追加する
-       *  @param  task:追加するタスク
+       *  @brief  タスクグループを追加する
+       *  @param  task_group:追加するタスクグループ
        */
-      void Push(std::shared_ptr<ITask> task) override
+      void Push(std::shared_ptr<ITaskGroup> task_group) override
       {
-        task_list_.emplace_back(task);
+        task_group_list_.emplace_back(task_group);
       }
   
       /**
@@ -62,20 +70,51 @@ namespace App
        */
       std::shared_ptr<ITask> Pop() override
       {
-        // タスクの依存関係順にソートされている筈なので、先頭から実行していく
-        // タスクグループ内のタスクが全て終了したら、次のタスクグループの処理を行う。
-        // タスクグループ内のタスクの終了待ちを行わねばならない
+        std::uint32_t executed_index = executed_index_;
 
-        // current_index_はatomic変数なので
-        // 1つのタスクが複数のスレッドで一緒に実行される事が起きない
-        std::uint32_t index = current_index_++;
-
-        if (task_list_.size() <= index)
+        // 全タスクグループの全タスクが終了した
+        if (task_group_list_.size() <= executed_index)
         {
           return nullptr;
         }
 
-        return task_list_[index];
+        // 実行可能なタスクグループからタスクを取得する
+        for (auto i = 0; i < task_group_list_.size(); ++i)
+        {
+          // タスクが終了済み
+          if (task_group_list_[i]->Finished())
+          {
+            continue;
+          }
+
+          // 実行可能状態ではない(依存先のタスクグループが終了していない)
+          if (false == task_group_list_[i]->Ready())
+          {
+            continue;
+          }
+
+          auto task = task_group_list_[i]->Pop();
+          if (task != nullptr)
+          {
+            return task;
+          }
+        }
+
+        // 実行可能なタスクが存在しないので
+        // 実行中のタスクグループが終了するまで待機を行う
+        std::unique_lock<std::mutex> lock(mutex_);
+        condition_.wait(lock, [&] { return executed_index != executed_index_; });
+
+        return nullptr;
+
+        // 依存関係順にタスクグループを実行していく
+        // 実行しているタスクグループのタスクの終了待ち状態になったら(並列で実行できるタスクグループを実行する)
+        // 並列実行できるタスクグループが存在しなくなったらタスクグループの終了待ちを行う
+
+        // タスクの依存関係順にソートされている筈なので、先頭から実行していく
+        // タスクグループ内のタスクが全て終了したら、次のタスクグループの処理を行う。
+        // タスクグループ内のタスクの終了待ちを行わねばならない
+        // (並列実行ができるタスクグループが存在した場合はそちらの処理を行う)
       }
 
       /**
@@ -83,12 +122,14 @@ namespace App
        */
       void Clear() override
       {
-        task_list_.clear();
+        task_group_list_.clear();
       }
 
     private:
-      std::vector<std::shared_ptr<ITask>> task_list_; ///< タスクのリスト
-      std::atomic<std::uint32_t> current_index_;      ///< タスクリストの何番まで実行したかの番号
+      std::vector<std::shared_ptr<ITaskGroup>>  task_group_list_; ///< タスクグループのリスト
+      std::atomic<std::uint32_t> executed_index_;                 ///< タスクグループリストの何番まで実行したかの番号
+      std::mutex mutex_;                                          ///< 排他制御用ミューテックス
+      std::condition_variable condition_;                         ///< 実行待機用条件変数
     };
   };
 

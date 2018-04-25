@@ -11,6 +11,7 @@
 // include
 #include <memory>
 #include "task/task.h"
+#include "task/task_group.h"
 
 namespace App
 {
@@ -49,10 +50,10 @@ namespace App
     virtual void MakeReady() = 0;
 
     /**
-     *  @brief  タスクを追加する
-     *  @param  task:追加するタスク
+     *  @brief  タスクグループを追加する
+     *  @param  task_group:追加するタスクグループ
      */
-    virtual void Push(std::shared_ptr<ITask> task) = 0;
+    virtual void Push(std::shared_ptr<ITaskGroup> task_group) = 0;
 
     /**
      *  @brief  タスクを取得する
