@@ -8,6 +8,7 @@
 
  // include
 #include "task/task_scheduler.h"
+#include <vector>
 #include "task/task_queue.h"
 #include "task/task_thread.h"
 
@@ -49,12 +50,12 @@ namespace App
       }
 
       /**
-       *  @brief  タスクを登録する
-       *  @param  task:タスク
+       *  @brief  タスクグループを登録する
+       *  @param  task_group:登録するタスクグループ
        */
-      void Register(std::shared_ptr<ITask> task) override
+      void Register(std::shared_ptr<ITaskGroup> task_group) override
       {
-        queue_->Push(task);
+        queue_->Push(task_group);
       }
       
       /**

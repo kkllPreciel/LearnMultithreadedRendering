@@ -10,8 +10,7 @@
 
 // include
 #include <memory>
-#include <functional>
-#include "task/task.h"
+#include "task/task_group.h"
 
 namespace App
 {
@@ -32,10 +31,10 @@ namespace App
     virtual ~ITaskScheduler() = default;
 
     /**
-     *  @brief  タスクを登録する
-     *  @param  task:タスク
+     *  @brief  タスクグループを登録する
+     *  @param  task_group:登録するタスクグループ
      */
-    virtual void Register(std::shared_ptr<ITask> task) = 0;
+    virtual void Register(std::shared_ptr<ITaskGroup> task_group) = 0;
 
     /**
      *  @brief  タスクを実行する
