@@ -73,13 +73,16 @@ namespace App
         }
 
         // タスクの実行
-        std::shared_ptr<ITask> task = nullptr;
-        while ((task = queue_->Pop()) != nullptr)
+        while (false == queue_->Finished())
         {
-          task->Execute(delta_time);
+          std::shared_ptr<ITask> task = queue_->Pop();
+          if (task != nullptr)
+          {
+            task->Execute(delta_time);
+          }
         }
 
-        // TODO:別スレッドでタスクが実行中かもしれないので待機する
+        // TODO:スレッドを待機状態に変更する
 
         queue_->Clear();
       }
