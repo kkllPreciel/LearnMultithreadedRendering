@@ -94,7 +94,16 @@ namespace App
           }
 
           std::shared_ptr<ITask> task = queue_->Pop();
-          if (task == nullptr)
+          if (task != nullptr)
+          {
+            // タスクを実行する
+            task->Execute(delta_time_);
+          }
+          else if (false == queue_->Finished())
+          {
+            continue;
+          }
+          else
           {
             // タスクが存在しないので待機する
 
@@ -103,11 +112,6 @@ namespace App
 
             // スレッドの待機
             condition_.wait(lk);
-          }
-          else
-          {
-            // タスクを実行する
-            task->Execute(delta_time_);
           }
         }
       }
