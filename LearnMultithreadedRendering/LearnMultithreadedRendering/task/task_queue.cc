@@ -25,7 +25,7 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      TaskQueue() : task_group_list_({}), executed_index_(0)
+      TaskQueue() : task_group_list_({}), executed_index_(0), finished_(false)
       {
 
       }
@@ -44,12 +44,16 @@ namespace App
       void MakeReady() override
       {
         executed_index_ = 0;
+        finished_ = false;
 
         // タスクグループの終了イベントに登録する
         for (auto task_group : task_group_list_)
         {
           task_group->RegisterFinishEvent([&]() {
-            ++executed_index_;
+            if (++executed_index_ == task_group_list_.size())
+            {
+              finished_ = true;
+            }
             condition_.notify_all();
           });
         }
@@ -118,16 +122,27 @@ namespace App
       }
 
       /**
+       *  @brief  キュー内の全タスクグループが終了したか?
+       *  @return 終了フラグ
+       */
+      bool Finished() override
+      {
+        return finished_;
+      }
+
+      /**
        *  @brief  キューをクリアする
        */
       void Clear() override
       {
+        executed_index_ = 0;
         task_group_list_.clear();
       }
 
     private:
       std::vector<std::shared_ptr<ITaskGroup>>  task_group_list_; ///< タスクグループのリスト
       std::atomic<std::uint32_t> executed_index_;                 ///< タスクグループリストの何番まで実行したかの番号
+      std::atomic<bool> finished_;                                ///< 終了済みフラグ
       std::mutex mutex_;                                          ///< 排他制御用ミューテックス
       std::condition_variable condition_;                         ///< 実行待機用条件変数
     };

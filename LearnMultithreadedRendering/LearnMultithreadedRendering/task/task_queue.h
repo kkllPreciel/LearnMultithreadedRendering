@@ -62,6 +62,12 @@ namespace App
     virtual std::shared_ptr<ITask> Pop() = 0;
 
     /**
+     *  @brief  キュー内の全タスクグループが終了したか?
+     *  @return 終了フラグ
+     */
+    virtual bool Finished() = 0;
+
+    /**
      *  @brief  キューをクリアする
      */
     virtual void Clear() = 0;
