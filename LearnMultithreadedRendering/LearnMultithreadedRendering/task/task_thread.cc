@@ -69,6 +69,7 @@ namespace App
         {
           // 終了フラグを立てる
           terminate_ = true;
+          executing_ = true;
 
           // スレッドを起床する
           condition_.notify_one();
@@ -95,6 +96,14 @@ namespace App
        */
       void Run()
       {
+        {
+          // 排他処理
+          std::unique_lock<std::mutex> lk(mutex_);
+
+          // スレッドの待機
+          condition_.wait(lk, [&]{ return executing_; });
+        }
+        
         while (true)
         {
           // 終了フラグが立っていたら終了する
@@ -123,7 +132,7 @@ namespace App
             executing_ = false;
 
             // スレッドの待機
-            condition_.wait(lk);
+            condition_.wait(lk, [&] { return executing_; });
           }
         }
 
