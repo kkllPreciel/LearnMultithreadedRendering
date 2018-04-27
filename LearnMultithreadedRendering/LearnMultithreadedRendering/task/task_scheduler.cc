@@ -82,7 +82,21 @@ namespace App
           }
         }
 
-        // TODO:スレッドを待機状態に変更する
+        // スレッドの終了待ち
+        bool finished = false;
+        while (false == finished)
+        {
+          finished = true;
+          for (auto& thread : thread_list_)
+          {
+            if (false == thread->Executing())
+            {
+              continue;
+            }
+
+            finished = false;
+          }
+        }
 
         queue_->Clear();
       }
