@@ -24,7 +24,7 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      TaskThread() : thread_(nullptr), queue_(), terminate_(false)
+      TaskThread() : thread_(nullptr), queue_(), terminate_(false), executing_(false)
       {
 
       }
@@ -54,6 +54,7 @@ namespace App
       void Execute(std::uint64_t delta_time) override
       {
         delta_time_ = delta_time;
+        executing_ = true;
 
         // スレッドを起床する
         condition_.notify_one();
@@ -77,6 +78,15 @@ namespace App
 
           thread_.reset();
         }
+      }
+
+      /**
+       *  @brief  実行中か?
+       *  @return 実行中フラグ
+       */
+      bool Executing() const override
+      {
+        return executing_;
       }
 
     private:
@@ -110,10 +120,14 @@ namespace App
             // 排他処理
             std::unique_lock<std::mutex> lk(mutex_);
 
+            executing_ = false;
+
             // スレッドの待機
             condition_.wait(lk);
           }
         }
+
+        executing_ = false;
       }
 
     private:
@@ -123,6 +137,7 @@ namespace App
       std::condition_variable condition_;   ///< 条件変数
       std::uint64_t delta_time_;            ///< フレームの経過時間
       bool terminate_;                      ///< 終了フラグ
+      bool executing_;                      ///< 実行中フラグ
     };
   };
 

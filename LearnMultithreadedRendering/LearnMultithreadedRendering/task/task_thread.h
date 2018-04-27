@@ -55,6 +55,12 @@ namespace App
     virtual void Destroy() = 0;
 
     /**
+     *  @brief  実行中か?
+     *  @return 実行中フラグ
+     */
+    virtual bool Executing() const = 0;
+
+    /**
      *  @brief  タスクスレッドを作成する
      *  @param  queue:タスクのキュー
      *  @return タスクスレッドインターフェイスへのシェアードポインタ
