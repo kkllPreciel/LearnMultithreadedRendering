@@ -9,7 +9,6 @@
  // include
 #include "task/task.h"
 #include <cassert>
-#include <atomic>
 #include <vector>
 
 namespace App
@@ -26,7 +25,7 @@ namespace App
        *  @brief  コンストラクタ
        *  @param  task:タスク関数
        */
-      Task(std::function<void(std::uint64_t)> task) : task_(task), finished_(false), executing_(false), callback_list_({})
+      Task(std::function<void()> task) : task_(task), finished_(false), executing_(false), callback_list_({})
       {
 
       }
@@ -43,12 +42,12 @@ namespace App
        *  @brief  タスクを実行する
        *  @param  delta_time:フレームの経過時間
        */
-      void Execute(std::uint64_t delta_time) override
+      void Execute() override
       {
         assert(!executing_ && !finished_);
         executing_ = true;
 
-        task_(delta_time);
+        task_();
         
         executing_ = false;
         finished_ = true;
@@ -79,7 +78,7 @@ namespace App
       }
 
     private:
-      std::function<void(std::uint64_t)> task_;           ///< タスク関数
+      std::function<void()> task_;                        ///< タスク関数
       bool finished_;                                     ///< 終了済みフラグ
       bool executing_;                                    ///< 実行中フラグ
       std::vector<std::function<void()>> callback_list_;  ///< タスク終了時に実行する関数のリスト
@@ -91,7 +90,7 @@ namespace App
    *  @param  task_function:タスク関数
    *  @return タスクインターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<ITask> ITask::Create(std::function<void(std::uint64_t delta_time)> task_function)
+  std::shared_ptr<ITask> ITask::Create(std::function<void()> task_function)
   {
     auto task = std::make_shared<Task>(task_function);
     return task;
