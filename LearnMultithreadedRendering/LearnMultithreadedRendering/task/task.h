@@ -45,8 +45,9 @@ namespace App
 
     /**
      *  @brief  タスクを実行する
+     *  @param  delta_time:フレームの経過時間
      */
-    virtual void Execute() = 0;
+    virtual void Execute(std::uint64_t delta_time) = 0;
 
     /**
      *  @brief  タスクが終了したか?
@@ -65,6 +66,6 @@ namespace App
      *  @param  task_function:タスク関数
      *  @return タスクインターフェイスへのシェアードポインタ
      */
-    static std::shared_ptr<ITask> Create(std::function<void()> task_function);
+    static std::shared_ptr<ITask> Create(std::function<void(std::uint64_t delta_time)> task_function);
   };
 };
