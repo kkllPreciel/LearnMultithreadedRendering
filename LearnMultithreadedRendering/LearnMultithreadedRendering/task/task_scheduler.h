@@ -38,8 +38,9 @@ namespace App
 
     /**
      *  @brief  タスクを実行する
+     *  @param  delta_time:フレームの経過時間
      */
-    virtual void Execute() = 0;
+    virtual void Execute(std::uint64_t delta_time) = 0;
 
     /**
      *  @brief  終了する

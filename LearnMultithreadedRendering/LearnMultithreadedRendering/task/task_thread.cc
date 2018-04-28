@@ -49,9 +49,11 @@ namespace App
 
       /**
        *  @brief  実行する
+       *  @param  delta_time:フレームの経過時間
        */
-      void Execute() override
+      void Execute(std::uint64_t delta_time) override
       {
+        delta_time_ = delta_time;
         executing_ = true;
 
         // スレッドを起床する
@@ -114,7 +116,7 @@ namespace App
           if (task != nullptr)
           {
             // タスクを実行する
-            task->Execute();
+            task->Execute(delta_time_);
           }
           else if (false == queue_->Finished())
           {
@@ -142,6 +144,7 @@ namespace App
       std::shared_ptr<ITaskQueue> queue_;   ///< タスクキュー
       std::mutex mutex_;                    ///< ミューテックス
       std::condition_variable condition_;   ///< 条件変数
+      std::uint64_t delta_time_;            ///< フレームの経過時間
       bool terminate_;                      ///< 終了フラグ
       bool executing_;                      ///< 実行中フラグ
     };
