@@ -60,16 +60,15 @@ namespace App
       
       /**
        *  @brief  タスクを実行する
-       *  @param  delta_time:フレームの経過時間
        */
-      void Execute(std::uint64_t delta_time) override
+      void Execute() override
       {
         queue_->MakeReady();
 
         // スレッドの起床
         for (auto& thread : thread_list_)
         {
-          thread->Execute(delta_time);
+          thread->Execute();
         }
 
         // タスクの実行
@@ -78,7 +77,7 @@ namespace App
           std::shared_ptr<ITask> task = queue_->Pop();
           if (task != nullptr)
           {
-            task->Execute(delta_time);
+            task->Execute();
           }
         }
 
