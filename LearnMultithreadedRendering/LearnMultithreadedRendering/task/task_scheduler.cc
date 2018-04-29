@@ -65,6 +65,12 @@ namespace App
       {
         queue_->MakeReady();
 
+        // スレッドの起床
+        for (auto& thread : thread_list_)
+        {
+          thread->Execute();
+        }
+
         // タスクの実行
         while (false == queue_->Finished())
         {
@@ -72,6 +78,22 @@ namespace App
           if (task != nullptr)
           {
             task->Execute();
+          }
+        }
+
+        // スレッドの終了待ち
+        bool finished = false;
+        while (false == finished)
+        {
+          finished = true;
+          for (auto& thread : thread_list_)
+          {
+            if (false == thread->Executing())
+            {
+              continue;
+            }
+
+            finished = false;
           }
         }
 
