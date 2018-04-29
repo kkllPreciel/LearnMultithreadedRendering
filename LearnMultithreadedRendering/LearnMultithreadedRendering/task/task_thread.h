@@ -44,9 +44,20 @@ namespace App
     ITaskThread& operator = (const ITaskThread& other) = delete;
 
     /**
+     *  @brief  実行する
+     */
+    virtual void Execute() = 0;
+
+    /**
      *  @brief  終了する
      */
     virtual void Destroy() = 0;
+
+    /**
+     *  @brief  実行中か?
+     *  @return 実行中フラグ
+     */
+    virtual bool Executing() const = 0;
 
     /**
      *  @brief  タスクスレッドを作成する
