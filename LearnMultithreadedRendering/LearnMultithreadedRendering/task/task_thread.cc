@@ -9,7 +9,7 @@
  // include
 #include "task/task_thread.h"
 #include <thread>
-#include <mutex>
+#include <atomic>
 
 namespace App
 {
@@ -24,7 +24,7 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      TaskThread() : thread_(nullptr), queue_(), terminate_(false), executing_(false)
+      TaskThread() : thread_(nullptr), queue_(), terminate_(false)
       {
 
       }
@@ -46,17 +46,6 @@ namespace App
         queue_ = queue;
         thread_ = std::make_unique<std::thread>(&TaskThread::Run, this);
       }
-
-      /**
-       *  @brief  実行する
-       */
-      void Execute() override
-      {
-        executing_ = true;
-
-        // スレッドを起床する
-        condition_.notify_one();
-      }
   
       /**
        *  @brief  終了する
@@ -67,10 +56,6 @@ namespace App
         {
           // 終了フラグを立てる
           terminate_ = true;
-          executing_ = true;
-
-          // スレッドを起床する
-          condition_.notify_one();
 
           // スレッドの終了待ちを行う
           thread_->join();
@@ -79,71 +64,31 @@ namespace App
         }
       }
 
-      /**
-       *  @brief  実行中か?
-       *  @return 実行中フラグ
-       */
-      bool Executing() const override
-      {
-        return executing_;
-      }
-
     private:
       /**
        *  @brief  タスクスレッドのメイン関数
        */
       void Run()
       {
+        while (terminate_ == false)
         {
-          // 排他処理
-          std::unique_lock<std::mutex> lk(mutex_);
-
-          // スレッドの待機
-          condition_.wait(lk, [&]{ return executing_; });
-        }
-        
-        while (true)
-        {
-          // 終了フラグが立っていたら終了する
-          if (terminate_)
-          {
-            break;
-          }
-
           std::shared_ptr<ITask> task = queue_->Pop();
-          if (task != nullptr)
-          {
-            // タスクを実行する
-            task->Execute();
-          }
-          else if (false == queue_->Finished())
+
+          // TODO:条件変数を使って待機した方が良いか調べる(CPUが無駄に回るので)
+          if (task == nullptr)
           {
             continue;
           }
-          else
-          {
-            // タスクが存在しないので待機する
 
-            // 排他処理
-            std::unique_lock<std::mutex> lk(mutex_);
-
-            executing_ = false;
-
-            // スレッドの待機
-            condition_.wait(lk, [&] { return executing_; });
-          }
+          // タスクを実行する
+          task->Execute();
         }
-
-        executing_ = false;
       }
 
     private:
       std::unique_ptr<std::thread> thread_; ///< スレッド
       std::shared_ptr<ITaskQueue> queue_;   ///< タスクキュー
-      std::mutex mutex_;                    ///< ミューテックス
-      std::condition_variable condition_;   ///< 条件変数
-      bool terminate_;                      ///< 終了フラグ
-      bool executing_;                      ///< 実行中フラグ
+      std::atomic<bool> terminate_;         ///< 終了フラグ
     };
   };
 
