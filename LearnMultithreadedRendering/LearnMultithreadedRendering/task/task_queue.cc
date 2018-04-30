@@ -39,19 +39,32 @@ namespace App
       }
 
       /**
+       *  @brief  実行の準備を行う
+       */
+      void MakeReady() override
+      {
+        executed_index_ = 0;
+        finished_ = false;
+
+        // タスクグループの終了イベントに登録する
+        for (auto task_group : task_group_list_)
+        {
+          task_group->RegisterFinishEvent([&]() {
+            if (++executed_index_ == task_group_list_.size())
+            {
+              finished_ = true;
+            }
+            condition_.notify_all();
+          });
+        }
+      }
+
+      /**
        *  @brief  タスクグループを追加する
        *  @param  task_group:追加するタスクグループ
        */
       void Push(std::shared_ptr<ITaskGroup> task_group) override
       {
-        // タスクグループの終了イベントに登録する
-        task_group->RegisterFinishEvent([&]() {
-          if (++executed_index_ == task_group_list_.size())
-          {
-            finished_ = true;
-          }
-          condition_.notify_all();
-        });
         task_group_list_.emplace_back(task_group);
       }
   
@@ -61,32 +74,30 @@ namespace App
        */
       std::shared_ptr<ITask> Pop() override
       {
-        // 実行中に値が変わってしまう場合があるのでローカル変数にコピーする
         std::uint32_t executed_index = executed_index_;
-        auto task_group_list = task_group_list_;
 
         // 全タスクグループの全タスクが終了した
-        if (task_group_list.size() <= executed_index)
+        if (task_group_list_.size() <= executed_index)
         {
           return nullptr;
         }
 
         // 実行可能なタスクグループからタスクを取得する
-        for (auto i = 0; i < task_group_list.size(); ++i)
+        for (auto i = 0; i < task_group_list_.size(); ++i)
         {
           // タスクが終了済み
-          if (task_group_list[i]->Finished())
+          if (task_group_list_[i]->Finished())
           {
             continue;
           }
 
           // 実行可能状態ではない(依存先のタスクグループが終了していない)
-          if (false == task_group_list[i]->Ready())
+          if (false == task_group_list_[i]->Ready())
           {
             continue;
           }
 
-          auto task = task_group_list[i]->Pop();
+          auto task = task_group_list_[i]->Pop();
           if (task != nullptr)
           {
             return task;
@@ -108,6 +119,15 @@ namespace App
       bool Finished() override
       {
         return finished_;
+      }
+
+      /**
+       *  @brief  キューをクリアする
+       */
+      void Clear() override
+      {
+        executed_index_ = 0;
+        task_group_list_.clear();
       }
 
     private:

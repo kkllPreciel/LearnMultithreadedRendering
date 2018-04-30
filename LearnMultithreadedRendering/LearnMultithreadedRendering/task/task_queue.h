@@ -45,6 +45,11 @@ namespace App
     ITaskQueue& operator = (const ITaskQueue& other) = delete;
 
     /**
+     *  @brief  実行の準備を行う
+     */
+    virtual void MakeReady() = 0;
+
+    /**
      *  @brief  タスクグループを追加する
      *  @param  task_group:追加するタスクグループ
      */
@@ -61,6 +66,11 @@ namespace App
      *  @return 終了フラグ
      */
     virtual bool Finished() = 0;
+
+    /**
+     *  @brief  キューをクリアする
+     */
+    virtual void Clear() = 0;
 
     /**
      *  @brief  タスクキューを作成する
