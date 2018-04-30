@@ -37,11 +37,6 @@ namespace App
     virtual void Register(std::shared_ptr<ITaskGroup> task_group) = 0;
 
     /**
-     *  @brief  タスクを実行する
-     */
-    virtual void Execute() = 0;
-
-    /**
      *  @brief  終了する
      */
     virtual void Destroy() = 0;

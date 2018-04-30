@@ -59,26 +59,6 @@ namespace App
       }
       
       /**
-       *  @brief  タスクを実行する
-       */
-      void Execute() override
-      {
-        queue_->MakeReady();
-
-        // タスクの実行
-        while (false == queue_->Finished())
-        {
-          std::shared_ptr<ITask> task = queue_->Pop();
-          if (task != nullptr)
-          {
-            task->Execute();
-          }
-        }
-
-        queue_->Clear();
-      }
-      
-      /**
        *  @brief  終了する
        */
       void Destroy() override
