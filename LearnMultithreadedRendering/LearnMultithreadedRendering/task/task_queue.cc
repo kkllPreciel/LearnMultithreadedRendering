@@ -25,7 +25,7 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      TaskQueue() : task_group_list_({}), executed_index_(0), finished_(false)
+      TaskQueue() : task_group_list_({}), executed_index_(0)
       {
 
       }
@@ -46,10 +46,7 @@ namespace App
       {
         // タスクグループの終了イベントに登録する
         task_group->RegisterFinishEvent([&]() {
-          if (++executed_index_ == task_group_list_.size())
-          {
-            finished_ = true;
-          }
+          ++executed_index_;
           condition_.notify_all();
         });
         task_group_list_.emplace_back(task_group);
@@ -63,30 +60,29 @@ namespace App
       {
         // 実行中に値が変わってしまう場合があるのでローカル変数にコピーする
         std::uint32_t executed_index = executed_index_;
-        auto task_group_list = task_group_list_;
 
         // 全タスクグループの全タスクが終了した
-        if (task_group_list.size() <= executed_index)
+        if (task_group_list_.size() <= executed_index)
         {
           return nullptr;
         }
 
         // 実行可能なタスクグループからタスクを取得する
-        for (auto i = 0; i < task_group_list.size(); ++i)
+        for (auto i = 0; i < task_group_list_.size(); ++i)
         {
           // タスクが終了済み
-          if (task_group_list[i]->Finished())
+          if (task_group_list_[i]->Finished())
           {
             continue;
           }
 
           // 実行可能状態ではない(依存先のタスクグループが終了していない)
-          if (false == task_group_list[i]->Ready())
+          if (false == task_group_list_[i]->Ready())
           {
             continue;
           }
 
-          auto task = task_group_list[i]->Pop();
+          auto task = task_group_list_[i]->Pop();
           if (task != nullptr)
           {
             return task;
@@ -101,19 +97,9 @@ namespace App
         return nullptr;
       }
 
-      /**
-       *  @brief  キュー内の全タスクグループが終了したか?
-       *  @return 終了フラグ
-       */
-      bool Finished() override
-      {
-        return finished_;
-      }
-
     private:
       std::vector<std::shared_ptr<ITaskGroup>>  task_group_list_; ///< タスクグループのリスト
       std::atomic<std::uint32_t> executed_index_;                 ///< タスクグループリストの何番まで実行したかの番号
-      std::atomic<bool> finished_;                                ///< 終了済みフラグ
       std::mutex mutex_;                                          ///< 排他制御用ミューテックス
       std::condition_variable condition_;                         ///< 実行待機用条件変数
     };
