@@ -49,8 +49,6 @@ namespace App
           ++executed_index_;
           condition_.notify_all();
         });
-
-        std::unique_lock<std::mutex> lock(mutex_);
         task_group_list_.emplace_back(task_group);
       }
   
@@ -60,8 +58,6 @@ namespace App
        */
       std::shared_ptr<ITask> Pop() override
       {
-        std::unique_lock<std::mutex> lock(mutex_);
-
         // 実行中に値が変わってしまう場合があるのでローカル変数にコピーする
         std::uint32_t executed_index = executed_index_;
 
@@ -95,6 +91,7 @@ namespace App
 
         // 実行可能なタスクが存在しないので
         // 実行中のタスクグループが終了するまで待機を行う
+        std::unique_lock<std::mutex> lock(mutex_);
         condition_.wait(lock, [&] { return executed_index != executed_index_; });
 
         return nullptr;
