@@ -72,21 +72,21 @@ namespace App
         }
 
         // 実行可能なタスクグループからタスクを取得する
-        for (auto& task_group : task_group_list_)
+        for (auto i = 0; i < task_group_list_.size(); ++i)
         {
           // タスクが終了済み
-          if (task_group->Finished())
+          if (task_group_list_[i]->Finished())
           {
             continue;
           }
 
           // 実行可能状態ではない(依存先のタスクグループが終了していない)
-          if (false == task_group->Ready())
+          if (false == task_group_list_[i]->Ready())
           {
             continue;
           }
 
-          auto task = task_group->Pop();
+          auto task = task_group_list_[i]->Pop();
           if (task != nullptr)
           {
             return task;
