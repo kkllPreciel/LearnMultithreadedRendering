@@ -1,9 +1,14 @@
 #include "learn_multithreaded_rendering.h"
-#include <thread>
 #include "model/mesh.h"
 
 static std::shared_ptr<App::IMesh> mesh;
 static DirectX::XMFLOAT4X4 matrix;
+
+
+#include "task/task_scheduler.h"
+#include <thread>
+
+static std::shared_ptr<App::ITaskScheduler> scheduler;
 
 /**
  *  @brief  コンストラクタ
@@ -33,7 +38,7 @@ LearnMultithreadedRendering::LearnMultithreadedRendering(QWidget *parent)
     DirectX::XMStoreFloat4x4(&matrix, DirectX::XMMatrixScaling(0.1f, 0.1f, 0.1f));
     
     // タスクスケジューラのテスト
-    scheduler_ = App::ITaskScheduler::Create(std::thread::hardware_concurrency() - 1);
+    scheduler = App::ITaskScheduler::Create(std::thread::hardware_concurrency() - 1);
     auto start = std::chrono::system_clock::now();
 
     for (auto i = 0; i < 10000; ++i)
@@ -41,37 +46,37 @@ LearnMultithreadedRendering::LearnMultithreadedRendering(QWidget *parent)
       // タスクグループ「A」は依存関係なし
       auto task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is a\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
       auto a = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>());
-      scheduler_->Register(a);
+      scheduler->Register(a);
 
       // タスクグループ「B」は「A」に依存する
       task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is b\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
       auto b = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ a }));
-      scheduler_->Register(b);
+      scheduler->Register(b);
 
       // タスクグループ「C」は「A」と「B」に依存する
       task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is c\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
       auto c = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ a, b }));
-      scheduler_->Register(c);
+      scheduler->Register(c);
 
       // タスクグループ「D」は依存関係なし
       task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is d\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
       auto d = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>());
-      scheduler_->Register(d);
+      scheduler->Register(d);
 
       // タスクグループ「E」は「D」に依存する
       task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is e\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
       auto e = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ d }));
-      scheduler_->Register(e);
+      scheduler->Register(e);
 
       // タスクグループ「F」は「D」と「E」に依存する
       task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is f\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
       auto f = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ d, e }));
-      scheduler_->Register(f);
+      scheduler->Register(f);
 
       // タスクグループ「G」は「C」と「F」に依存する
       task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is g\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
       auto g = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ c, f }));
-      scheduler_->Register(g);
+      scheduler->Register(g);
 
       // 上記状態のタスクグループをタスクスケジューラに登録すると
       // 下記順番で実行される筈(括弧内は順番が変わるかも)
@@ -95,7 +100,6 @@ LearnMultithreadedRendering::~LearnMultithreadedRendering()
   }
 
   renderer_.reset();
-  scheduler_.reset();
 }
 
 /**

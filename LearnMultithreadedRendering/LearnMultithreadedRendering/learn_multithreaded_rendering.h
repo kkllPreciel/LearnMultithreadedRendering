@@ -5,7 +5,6 @@
 #include <qtimer.h>
 #include "ui_learn_multithreaded_rendering.h"
 #include "renderer/renderer.h"
-#include "task/task_scheduler.h"
 
 class LearnMultithreadedRendering : public QWidget
 {
@@ -31,7 +30,6 @@ private Q_SLOTS:
 
 private:
   Ui::LearnMultithreadedRenderingClass ui;
-  std::unique_ptr<QTimer> timer;                    ///< タイマー
-  std::shared_ptr<App::IRenderer> renderer_;        ///< レンダラー
-  std::shared_ptr<App::ITaskScheduler> scheduler_;  ///< スケジューラ
+  std::unique_ptr<QTimer> timer;              ///< タイマー
+  std::shared_ptr<App::IRenderer> renderer_;  ///< レンダラー
 };
