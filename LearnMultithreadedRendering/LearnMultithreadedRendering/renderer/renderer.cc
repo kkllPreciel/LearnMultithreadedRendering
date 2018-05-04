@@ -8,11 +8,11 @@
 
  // include
 #include "renderer/renderer.h"
-#include <thread>
-#include <atomic>
-#include <mutex>
+#include <cassert>
 #include <Sein/Direct3D12/direct3d12_device.h>
 #include "renderer/double_command_list.h"
+#include "task/task.h"
+#include "task/task_group.h"
 
 namespace App
 {
@@ -72,8 +72,8 @@ namespace App
        *  @brief  コンストラクタ
        */
       Renderer() : device_(nullptr), double_command_list_(nullptr),
-        thread_(nullptr), terminate_(false), processing_(false),
-        execute_render_object_list_(nullptr), store_render_object_list_(nullptr)
+        execute_render_object_list_(nullptr), store_render_object_list_(nullptr),
+        scheduler_(nullptr), task_group_(nullptr)
       {
 
       }
@@ -91,12 +91,16 @@ namespace App
        *  @param  handle:ウィンドウハンドル
        *  @param  width:ウィンドウの横幅
        *  @param  height:ウィンドウの縦幅
+       *  @param  scheduler:タスクスケジューラ
        */
-      void Create(HWND handle, std::uint32_t width, std::uint32_t height)
+      void Create(HWND handle, std::uint32_t width, std::uint32_t height, std::shared_ptr<ITaskScheduler> scheduler)
       {
         assert(device_ == nullptr);
+        assert(scheduler_ == nullptr);
         device_ = std::make_unique<Sein::Direct3D12::Device>();
         device_->Create(handle, width, height);
+
+        scheduler_ = scheduler;
 
         // コマンドリストの作成
         double_command_list_ = IDoubleCommandList::Create(device_.get(), D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
@@ -104,11 +108,6 @@ namespace App
         // レンダーオブジェクトキューの作成
         execute_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
         store_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
-
-        // スレッドの作成
-        terminate_ = false;
-        processing_ = false;
-        thread_ = std::make_unique<std::thread>(&Renderer::ThreadMain, this);
 
         // 定数バッファの作成
         constant_buffer_ = device_->CreateConstantBuffer(sizeof(ConstantBuffer));
@@ -181,9 +180,12 @@ namespace App
        */
       void Execute() override
       {
-        // レンダリングスレッドを起動する
-        processing_ = true;
-        condition_.notify_all();
+        assert(task_group_ == nullptr);
+        assert(scheduler_ != nullptr);
+
+        // タスクの作成と登録
+        task_group_ = ITaskGroup::Create(std::vector<std::shared_ptr<ITask>>({ ITask::Create([&]() { ThreadMain(); }) }), std::vector<std::shared_ptr<ITaskGroup>>());
+        scheduler_->Register(task_group_);
       }
       
       /**
@@ -191,10 +193,10 @@ namespace App
        */
       void Present() override
       {
-        // レンダリングスレッドの処理の終了待ちを行う
+        // タスクスケジューラの処理待ち
         // ここに来るまでに処理が終了している可能性がある
-        std::unique_lock<std::mutex> lock(mutex_);
-        condition_.wait(lock, [&] {return false == processing_; });
+        task_group_->Wait();
+        task_group_.reset();
 
         // TODO:描画終了待ちを行う
 
@@ -207,15 +209,6 @@ namespace App
        */
       void Destroy() override
       {
-        // レンダリングスレッドの終了待ちを行う
-        if (thread_ && thread_->joinable())
-        {
-          terminate_ = true;
-          condition_.notify_all();
-          thread_->join();
-          thread_.reset();
-        }
-
         store_render_object_list_.reset();
         execute_render_object_list_.reset();
 
@@ -229,82 +222,60 @@ namespace App
        */
       void ThreadMain()
       {
-        // 終了フラグが立っていなければ実行
-        while (terminate_ == false)
+        // 実行用コマンドリストと作成用コマンドリストを交換する
+        double_command_list_->Swap();
+
+        // 前フレームで作成したコマンドのリストを実行する(GPU)
+        device_->ExecuteCommandLists(const_cast<Sein::Direct3D12::ICommandList*>(&(double_command_list_->GetFrontCommandList())));
+
+        decltype(auto) store_command_list = double_command_list_->GetBackCommandList();
+
+        // 実行用描画オブジェクトのキューと作成用描画オブジェクトのキューを交換する
+        execute_render_object_list_.swap(store_render_object_list_);
+
+        // TODO:BeginScene、EndScene内のリソース指定を変更できるように
+        auto buffer_index = device_->GetNextBackBufferIndex();
+        device_->BeginScene(&store_command_list, buffer_index);
+
+        // TODO:前フレームのゲーム情報からコマンドのリストを作成する(キューに格納されている予定)
+
+        // TODO:ドローコールバッチング、ダイナミックバッチング
+        // TODO:draw in direct
+
+        // 定数バッファの設定(ビュー、プロジェクション)
+        constant_buffer_instance_.view_ = view_->view_matrix_;
+        constant_buffer_instance_.projection_ = view_->projection_matrix_;
+
+        // TODO:ビューポートの設定
+        // TODO:シザー矩形の設定
+
+
+        // ドローコール
+        for (auto& render_object : *execute_render_object_list_)
         {
-          // スレッドの待機
-          std::unique_lock<std::mutex> lock(mutex_);
-          condition_.wait(lock, [&] { return processing_ || terminate_; });
-
-          if (terminate_)
-          {
-            continue;
-          }
-
-          // 実行用コマンドリストと作成用コマンドリストを交換する
-          double_command_list_->Swap();
-
-          // 前フレームで作成したコマンドのリストを実行する(GPU)
-          device_->ExecuteCommandLists(const_cast<Sein::Direct3D12::ICommandList*>(&(double_command_list_->GetFrontCommandList())));
-
-          decltype(auto) store_command_list = double_command_list_->GetBackCommandList();
-
-          // 実行用描画オブジェクトのキューと作成用描画オブジェクトのキューを交換する
-          execute_render_object_list_.swap(store_render_object_list_);
-
-          // TODO:BeginScene、EndScene内のリソース指定を変更できるように
-          auto buffer_index = device_->GetNextBackBufferIndex();
-          device_->BeginScene(&store_command_list, buffer_index);
-
-          // TODO:前フレームのゲーム情報からコマンドのリストを作成する(キューに格納されている予定)
-
-          // TODO:ドローコールバッチング、ダイナミックバッチング
-          // TODO:draw in direct
-          
-          // 定数バッファの設定(ビュー、プロジェクション)
-          constant_buffer_instance_.view_ = view_->view_matrix_;
-          constant_buffer_instance_.projection_ = view_->projection_matrix_;
-
-          // TODO:ビューポートの設定
-          // TODO:シザー矩形の設定
-          
-
-          // ドローコール
-          for (auto& render_object : *execute_render_object_list_)
-          {
-            auto& vertex_buffer = const_cast<Sein::Direct3D12::IVertexBuffer&>(render_object.vertex_buffer_);
-            auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(render_object.index_buffer_);
-            auto index_count = render_object.index_count_;
-            constant_buffer_instance_.world_ = render_object.matrix_;
-            constant_buffer_->Map(sizeof(ConstantBuffer), &(constant_buffer_instance_));
-            store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
-            store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
-            device_->Render(&store_command_list, index_count, 1);
-          }
-
-          device_->EndScene(&store_command_list, buffer_index);
-
-          // オブジェクトの描画に必要なもの
-          // ワールド座標
-          // カメラ
-          // プロジェクション
-          // メッシュ
-          // ライト
-          // ボーン行列
-
-          // スレッドの処理終了通知
-          processing_ = false;
-          condition_.notify_all();
+          auto& vertex_buffer = const_cast<Sein::Direct3D12::IVertexBuffer&>(render_object.vertex_buffer_);
+          auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(render_object.index_buffer_);
+          auto index_count = render_object.index_count_;
+          constant_buffer_instance_.world_ = render_object.matrix_;
+          constant_buffer_->Map(sizeof(ConstantBuffer), &(constant_buffer_instance_));
+          store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+          store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
+          store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
+          device_->Render(&store_command_list, index_count, 1);
         }
+
+        device_->EndScene(&store_command_list, buffer_index);
+
+        // オブジェクトの描画に必要なもの
+        // ワールド座標
+        // カメラ
+        // プロジェクション
+        // メッシュ
+        // ライト
+        // ボーン行列
       }
 
     private:
-      std::unique_ptr<std::thread> thread_;                                   ///< スレッド
-      std::atomic<bool> terminate_;                                           ///< 終了フラグ
-      bool processing_;                                                       ///< 処理中フラグ
-      std::mutex mutex_;                                                      ///< スレッド間排他処理用
-      std::condition_variable condition_;                                     ///< スレッド間実行待機用
       std::unique_ptr<Sein::Direct3D12::Device> device_;                      ///< デバイス
       std::shared_ptr<App::IDoubleCommandList> double_command_list_;          ///< コマンドリスト(ダブルバッファリングする)
 
@@ -316,6 +287,9 @@ namespace App
       std::unique_ptr<Sein::Direct3D12::IConstantBuffer> constant_buffer_;    ///< 定数バッファ
 
       std::unique_ptr<View> view_;                                            ///< ビュー
+
+      std::shared_ptr<ITaskScheduler> scheduler_;                             ///< スケジューラ
+      std::shared_ptr<ITaskGroup> task_group_;                                ///< タスクグループ
     };
   };
 
@@ -324,13 +298,14 @@ namespace App
    *  @param  handle:ウィンドウハンドル
    *  @param  width:ウィンドウの横幅
    *  @param  height:ウィンドウの縦幅
+   *  @param  scheduler:タスクスケジューラ
    *  @return レンダラーインターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<IRenderer> IRenderer::Create(HWND handle, std::uint32_t width, std::uint32_t height)
+  std::shared_ptr<IRenderer> IRenderer::Create(HWND handle, std::uint32_t width, std::uint32_t height, std::shared_ptr<ITaskScheduler> scheduler)
   {
     auto renderer = std::make_unique<Renderer>();
 
-    renderer->Create(handle, width, height);
+    renderer->Create(handle, width, height, scheduler);
 
     return renderer;
   }

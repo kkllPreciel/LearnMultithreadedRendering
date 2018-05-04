@@ -13,6 +13,7 @@
 #include <DirectXMath.h>
 #include <Sein/Direct3D12/vertex_buffer.h>
 #include <Sein/Direct3D12/index_buffer.h>
+#include "task/task_scheduler.h"
 
 namespace App
 {
@@ -98,8 +99,9 @@ namespace App
      *  @param  handle:ウィンドウハンドル
      *  @param  width:ウィンドウの横幅
      *  @param  height:ウィンドウの縦幅
+     *  @param  scheduler:タスクスケジューラ
      *  @return レンダラーインターフェイスへのシェアードポインタ
      */
-    static std::shared_ptr<IRenderer> Create(HWND handle, std::uint32_t width, std::uint32_t height);
+    static std::shared_ptr<IRenderer> Create(HWND handle, std::uint32_t width, std::uint32_t height, std::shared_ptr<ITaskScheduler> scheduler);
   };
 };
