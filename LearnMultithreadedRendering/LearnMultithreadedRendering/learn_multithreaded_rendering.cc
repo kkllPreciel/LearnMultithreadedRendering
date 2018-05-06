@@ -34,56 +34,59 @@ LearnMultithreadedRendering::LearnMultithreadedRendering(QWidget *parent)
     };
     mesh = App::IMesh::CreateForTriangle(renderer_.get(), positions);
     DirectX::XMStoreFloat4x4(&matrix, DirectX::XMMatrixScaling(0.1f, 0.1f, 0.1f));
-    
+
+#if false
+
     // タスクスケジューラのテスト
     auto start = std::chrono::system_clock::now();
 
-    //for (auto i = 0; i < 10000; ++i)
-    //{
-    //  // タスクグループ「A」は依存関係なし
-    //  auto task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is a\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
-    //  auto a = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>());
-    //  scheduler_->Register(a);
+    for (auto i = 0; i < 10000; ++i)
+    {
+      // タスクグループ「A」は依存関係なし
+      auto task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is a\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
+      auto a = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>());
+      scheduler_->Register(a);
 
-    //  // タスクグループ「B」は「A」に依存する
-    //  task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is b\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
-    //  auto b = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ a }));
-    //  scheduler_->Register(b);
+      // タスクグループ「B」は「A」に依存する
+      task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is b\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
+      auto b = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ a }));
+      scheduler_->Register(b);
 
-    //  // タスクグループ「C」は「A」と「B」に依存する
-    //  task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is c\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
-    //  auto c = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ a, b }));
-    //  scheduler_->Register(c);
+      // タスクグループ「C」は「A」と「B」に依存する
+      task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is c\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
+      auto c = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ a, b }));
+      scheduler_->Register(c);
 
-    //  // タスクグループ「D」は依存関係なし
-    //  task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is d\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
-    //  auto d = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>());
-    //  scheduler_->Register(d);
+      // タスクグループ「D」は依存関係なし
+      task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is d\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
+      auto d = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>());
+      scheduler_->Register(d);
 
-    //  // タスクグループ「E」は「D」に依存する
-    //  task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is e\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
-    //  auto e = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ d }));
-    //  scheduler_->Register(e);
+      // タスクグループ「E」は「D」に依存する
+      task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is e\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
+      auto e = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ d }));
+      scheduler_->Register(e);
 
-    //  // タスクグループ「F」は「D」と「E」に依存する
-    //  task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is f\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
-    //  auto f = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ d, e }));
-    //  scheduler_->Register(f);
+      // タスクグループ「F」は「D」と「E」に依存する
+      task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is f\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
+      auto f = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ d, e }));
+      scheduler_->Register(f);
 
-    //  // タスクグループ「G」は「C」と「F」に依存する
-    //  task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is g\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
-    //  auto g = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ c, f }));
-    //  scheduler_->Register(g);
+      // タスクグループ「G」は「C」と「F」に依存する
+      task = App::ITask::Create([]() { wchar_t buf[256] = { 0 }; swprintf_s<256>(buf, L"task is g\n"); OutputDebugString(buf); std::this_thread::sleep_for(std::chrono::milliseconds(10)); });
+      auto g = App::ITaskGroup::Create(std::vector<std::shared_ptr<App::ITask>>({ task }), std::vector<std::shared_ptr<App::ITaskGroup>>({ c, f }));
+      scheduler_->Register(g);
 
-    //  // 上記状態のタスクグループをタスクスケジューラに登録すると
-    //  // 下記順番で実行される筈(括弧内は順番が変わるかも)
-    //  // (A,D)、(B,E)、(C,F)、G
-    //}
+      // 上記状態のタスクグループをタスクスケジューラに登録すると
+      // 下記順番で実行される筈(括弧内は順番が変わるかも)
+      // (A,D)、(B,E)、(C,F)、G
+    }
 
-    //auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start);
-    //wchar_t buf[256] = { 0 };
-    //swprintf_s<256>(buf, L"delta time is %lld\n", delta.count());
-    //OutputDebugString(buf);
+    auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start);
+    wchar_t buf[256] = { 0 };
+    swprintf_s<256>(buf, L"delta time is %lld\n", delta.count());
+    OutputDebugString(buf);
+#endif
 }
 
 /**
