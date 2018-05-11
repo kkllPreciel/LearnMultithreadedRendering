@@ -11,9 +11,55 @@
 // include
 #include <memory>
 #include "../mesh.h"
+#include "../renderer/renderer.h"
 
 namespace App
 {
+  /**
+   *  @brief  メッシュデータ用インターフェイス
+   */
+  class IMeshData
+  {
+  public:
+    /**
+     *  @brief  コンストラクタ
+     */
+    IMeshData() = default;
+
+    /**
+     *  @brief  デストラクタ
+     */
+    virtual ~IMeshData() = default;
+
+    /**
+     *  @brief  コピーコンストラクタ
+     *  @param  other:コピー元のインスタンス
+     */
+    IMeshData(const IMeshData& other) = delete;
+  
+    /**
+     *  @brief  代入演算子オペレータ
+     *  @param  other:代入元のインスタンス
+     *  @return 代入後のインスタンス
+     */
+    IMeshData& operator = (const IMeshData& other) = delete;
+
+    // 1頂点のサイズ
+    virtual std::uint32_t GetOneVertexSize() = 0;
+
+    // 全頂点合計のサイズ
+    virtual std::uint32_t GetAllVertexSize() = 0;
+
+    // 1頂点インデックスのサイズ
+    virtual std::uint32_t GetOneVertexIndexSize() = 0;
+
+    // 全頂点インデックスのサイズ
+    virtual std::uint32_t GetAllVertexIndexSize() = 0;
+
+    // 頂点コピー関数
+    // 頂点インデックスコピー関数
+  };
+
   /**
    *  @brief  メッシュローダー用インターフェイス
    */
@@ -49,11 +95,11 @@ namespace App
     virtual void Destroy() = 0;
 
     /**
-     *  @brief  OBJフォーマットファイルからメッシュを読み込む
+     *  @brief  OBJフォーマットファイルからメッシュデータを読み込む
      *  @param  file_path:読み込みを行うファイルのパス
-     *  @return メッシュインターフェイスへのポインタ
+     *  @return メッシュデータインターフェイスへのポインタ
      */
-    virtual std::shared_ptr<IMesh> LoadFromObj(const std::string& file_path) = 0;
+    virtual std::shared_ptr<IMeshData> LoadFromObj(const std::string& file_path) = 0;
 
     /**
      *  @brief  メッシュローダーを作成する

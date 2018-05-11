@@ -44,11 +44,11 @@ namespace App
       }
 
       /**
-       *  @brief  OBJフォーマットファイルからメッシュを読み込む
+       *  @brief  OBJフォーマットファイルからメッシュデータを読み込む
        *  @param  file_path:読み込みを行うファイルのパス
-       *  @return メッシュインターフェイスへのポインタ
+       *  @return メッシュデータインターフェイスへのポインタ
        */
-      std::shared_ptr<IMesh> LoadFromObj(const std::string& file_path) override
+      std::shared_ptr<IMeshData> LoadFromObj(const std::string& file_path) override
       {
         return nullptr;
       }
