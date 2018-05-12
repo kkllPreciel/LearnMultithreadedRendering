@@ -10,8 +10,9 @@
 
 // include
 #include <memory>
+#include <Sein/Direct3D12/vertex_buffer.h>
+#include <Sein/Direct3D12/index_buffer.h>
 #include "../mesh.h"
-#include "../renderer/renderer.h"
 
 namespace App
 {
@@ -44,20 +45,42 @@ namespace App
      */
     IMeshData& operator = (const IMeshData& other) = delete;
 
-    // 1頂点のサイズ
+    /**
+     *  @brief  1頂点のサイズ(バイト数)を取得する
+     *  @return 1頂点のサイズ
+     */
     virtual std::uint32_t GetOneVertexSize() = 0;
 
-    // 全頂点合計のサイズ
+    /**
+     *  @brief  全頂点合計のサイズ(バイト数)を取得する
+     *  @return 全頂点のサイズ
+     */
     virtual std::uint32_t GetAllVertexSize() = 0;
 
-    // 1頂点インデックスのサイズ
+    /**
+     *  @brief  1頂点インデックスのサイズ(バイト数)を取得する
+     *  @return 1頂点インデックスのサイズ
+     */
     virtual std::uint32_t GetOneVertexIndexSize() = 0;
 
-    // 全頂点インデックスのサイズ
+    /**
+     *  @brief  全頂点インデックス合計のサイズ(バイト数)を取得する
+     *  @return 全頂点インデックス合計のサイズ
+     */
     virtual std::uint32_t GetAllVertexIndexSize() = 0;
 
-    // 頂点コピー関数
-    // 頂点インデックスコピー関数
+    /**
+     *  @brief  頂点インデックス数を取得する
+     *  @return 頂点インデックス数
+     */
+    virtual std::uint32_t GetVertexIndexCount() = 0;
+
+    /**
+     *  @brief  頂点バッファと頂点インデックスバッファにマップする
+     *  @param  vertex_buffer:頂点バッファ
+     *  @param  index_buffer:頂点インデックスバッファ
+     */
+    virtual void Map(std::shared_ptr<Sein::Direct3D12::IVertexBuffer>& vertex_buffer, std::shared_ptr<Sein::Direct3D12::IIndexBuffer>& index_buffer) = 0;
   };
 
   /**
