@@ -80,7 +80,7 @@ void LearnMultithreadedRendering::MainLoop()
 
   auto delta = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - start);
   wchar_t buf[256] = { 0 };
-  swprintf_s<256>(buf, L"delta time is %d\n", delta.count());
+  swprintf_s<256>(buf, L"delta time is %lld\n", delta.count());
   OutputDebugString(buf);
 
   all += delta.count();
