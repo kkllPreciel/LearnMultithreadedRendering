@@ -10,9 +10,7 @@
 
 // include
 #include <memory>
-#include <Sein/Direct3D12/vertex_buffer.h>
-#include <Sein/Direct3D12/index_buffer.h>
-#include "../mesh.h"
+#include <string>
 
 namespace App
 {
@@ -76,11 +74,16 @@ namespace App
     virtual std::uint32_t GetVertexIndexCount() = 0;
 
     /**
-     *  @brief  頂点バッファと頂点インデックスバッファにマップする
-     *  @param  vertex_buffer:頂点バッファ
-     *  @param  index_buffer:頂点インデックスバッファ
+     *  @brief  頂点データ配列の先頭ポインタを取得する
+     *  @return 頂点データ配列の先頭ポインタ
      */
-    virtual void Map(std::shared_ptr<Sein::Direct3D12::IVertexBuffer>& vertex_buffer, std::shared_ptr<Sein::Direct3D12::IIndexBuffer>& index_buffer) = 0;
+    virtual void* GetVertexData() = 0;
+
+    /**
+     *  @brief  頂点インデックスデータ配列の先頭ポインタを取得する
+     *  @return 頂点インデックスデータ配列の先頭ポインタ
+     */
+    virtual void* GetVertexIndexData() = 0;
   };
 
   /**
