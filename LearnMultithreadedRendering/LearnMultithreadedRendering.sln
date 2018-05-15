@@ -5,10 +5,13 @@ VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LearnMultithreadedRendering", "LearnMultithreadedRendering\LearnMultithreadedRendering.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
 	ProjectSection(ProjectDependencies) = postProject
+		{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8} = {7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}
 		{B1CF84E7-17D2-4206-9B17-AE9BC8785E8A} = {B1CF84E7-17D2-4206-9B17-AE9BC8785E8A}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sein", "..\Sein\Sein\Sein.vcxproj", "{B1CF84E7-17D2-4206-9B17-AE9BC8785E8A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MeshLoader", "MeshLoader\MeshLoader\MeshLoader.vcxproj", "{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +35,14 @@ Global
 		{B1CF84E7-17D2-4206-9B17-AE9BC8785E8A}.Release|x64.Build.0 = Release|x64
 		{B1CF84E7-17D2-4206-9B17-AE9BC8785E8A}.Release|x86.ActiveCfg = Release|Win32
 		{B1CF84E7-17D2-4206-9B17-AE9BC8785E8A}.Release|x86.Build.0 = Release|Win32
+		{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}.Debug|x64.ActiveCfg = Debug|x64
+		{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}.Debug|x64.Build.0 = Debug|x64
+		{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}.Debug|x86.ActiveCfg = Debug|Win32
+		{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}.Debug|x86.Build.0 = Debug|Win32
+		{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}.Release|x64.ActiveCfg = Release|x64
+		{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}.Release|x64.Build.0 = Release|x64
+		{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}.Release|x86.ActiveCfg = Release|Win32
+		{7AC9A1A6-2A32-4B00-84D3-B44EEAFE67F8}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
