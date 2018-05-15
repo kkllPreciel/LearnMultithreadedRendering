@@ -286,3 +286,11 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+# Boost Header
+LearnMultithreadedRendering/MeshLoader/MeshLoader/boost/1_66_0/boost/*
+!LearnMultithreadedRendering/MeshLoader/MeshLoader/boost/1_66_0/boost/.gitkeep
+
+# Boost Library
+LearnMultithreadedRendering/MeshLoader/MeshLoader/boost/1_66_0/lib64-msvc-14.1/*
+!LearnMultithreadedRendering/MeshLoader/MeshLoader/boost/1_66_0/lib64-msvc-14.1/.gitkeep
