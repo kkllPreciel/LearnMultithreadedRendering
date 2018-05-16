@@ -139,6 +139,27 @@ namespace App
   }
 
   /**
+   *  @brief  メッシュデータからメッシュを作成する
+   *  @param  renderer:レンダラー
+   *  @param  mesh_data:メッシュデータ
+   *  @return メッシュ用インターフェイスへのシェアードポインタ
+   */
+  std::shared_ptr<IMesh> IMesh::CreateFromMeshData(IRenderer* const renderer, std::shared_ptr<MeshLoader::IMeshData> mesh_data)
+  {
+    auto vertex_buffer = renderer->CreateVertexBuffer(mesh_data->GetAllVertexSize()).release();
+    auto index_buffer = renderer->CreateIndexBuffer(mesh_data->GetAllVertexIndexSize()).release();
+
+    auto mesh = std::make_shared<Mesh>();
+    mesh->SetVertexBuffer(vertex_buffer, mesh_data->GetVertexCount());
+    mesh->SetIndexBuffer(index_buffer, mesh_data->GetVertexIndexCount());
+
+    vertex_buffer->Map(mesh_data->GetOneVertexSize(), mesh_data->GetVertexData());
+    index_buffer->Map(DXGI_FORMAT_R32_UINT, mesh_data->GetVertexIndexData());
+
+    return mesh;
+  }
+
+  /**
    *  @brief  三角形(1ポリゴン)のメッシュを作成する
    *  @param  renderer:レンダラー
    *  @param  positions:頂点座標の配列

@@ -10,6 +10,9 @@
 
 // include
 #include <memory>
+
+#include <../MeshLoader/MeshLoader/mesh_loader.h>
+
 #include "../renderer/renderer.h"
 
 namespace App
@@ -76,6 +79,14 @@ namespace App
      *  @return メッシュ用インターフェイスへのシェアードポインタ
      */
     static std::shared_ptr<IMesh> Create(IRenderer* const renderer, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count);
+
+    /**
+     *  @brief  メッシュデータからメッシュを作成する
+     *  @param  renderer:レンダラー
+     *  @param  mesh_data:メッシュデータ
+     *  @return メッシュ用インターフェイスへのシェアードポインタ
+     */
+    static std::shared_ptr<IMesh> CreateFromMeshData(IRenderer* const renderer, std::shared_ptr<MeshLoader::IMeshData> mesh_data);
 
     /**
      *  @brief  三角形(1ポリゴン)のメッシュを作成する
