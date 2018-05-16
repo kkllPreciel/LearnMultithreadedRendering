@@ -4,6 +4,10 @@
 
 static std::shared_ptr<App::IMesh> mesh;
 static DirectX::XMFLOAT4X4 matrix;
+static float angle = 0.0f;
+
+
+#include "../MeshLoader/MeshLoader/mesh_loader.h"
 
 /**
  *  @brief  コンストラクタ
@@ -34,6 +38,10 @@ LearnMultithreadedRendering::LearnMultithreadedRendering(QWidget *parent)
     };
     mesh = App::IMesh::CreateForTriangle(renderer_.get(), positions);
     DirectX::XMStoreFloat4x4(&matrix, DirectX::XMMatrixScaling(0.1f, 0.1f, 0.1f));
+
+    auto mesh_loader = MeshLoader::IMeshLoader::Create();
+    auto mesh_data = mesh_loader->LoadFromObj("Resources\\Model\\torus.obj");
+    mesh = App::IMesh::CreateFromMeshData(renderer_.get(), mesh_data);
 }
 
 /**
@@ -73,6 +81,7 @@ void LearnMultithreadedRendering::MainLoop()
 
   // TODO:ゲームオブジェクトの更新
   scheduler_->Execute(0);
+  DirectX::XMStoreFloat4x4(&matrix, DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(0.1f, 0.1f, 0.1f), DirectX::XMMatrixRotationZ(angle += DirectX::XM_PI / 180.0f)));
   renderer_->Register(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetIndexCount(), matrix);
 
   // レンダリング終了待ち(GPUの処理終了待ち)
