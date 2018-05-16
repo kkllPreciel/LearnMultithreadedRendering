@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 
-namespace App
+namespace MeshLoader
 {
   /**
    *  @brief  メッシュデータ用インターフェイス
@@ -66,6 +66,12 @@ namespace App
      *  @return 全頂点インデックス合計のサイズ
      */
     virtual std::uint32_t GetAllVertexIndexSize() = 0;
+
+    /**
+     *  @brief  頂点数を取得する
+     *  @return 頂点数
+     */
+    virtual std::uint32_t GetVertexCount() = 0;
 
     /**
      *  @brief  頂点インデックス数を取得する
