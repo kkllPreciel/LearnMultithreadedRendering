@@ -9,6 +9,7 @@
  // include
 #include "renderer/renderer.h"
 #include <Sein/Direct3D12/direct3d12_device.h>
+#include <Sein/Direct3D12/shader_resource_buffer.h>
 #include "renderer/double_command_list.h"
 #include "task/task.h" 
 #include "task/task_group.h" 
@@ -113,6 +114,9 @@ namespace App
         DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.world_), DirectX::XMMatrixIdentity());
         DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.view_), DirectX::XMMatrixIdentity());
         DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.projection_), DirectX::XMMatrixIdentity());
+
+        // シェーダーリソースバッファ(StructuredBuffer)の作成
+        resource_buffer_ = device_->CreateShaderResourceBuffer(10000, sizeof(DirectX::XMFLOAT4X4));
 
         // ビューの作成
         view_ = std::make_unique<View>();
@@ -231,6 +235,13 @@ namespace App
 
         // 実行用描画オブジェクトのキューと作成用描画オブジェクトのキューを交換する
         execute_render_object_list_.swap(store_render_object_list_);
+        store_render_object_list_->clear();
+
+        // 描画するオブジェクトが存在しない
+        if (execute_render_object_list_->size() <= 0)
+        {
+          return;
+        }
 
         // TODO:BeginScene、EndScene内のリソース指定を変更できるように
         auto buffer_index = device_->GetNextBackBufferIndex();
@@ -241,13 +252,32 @@ namespace App
         // TODO:ドローコールバッチング、ダイナミックバッチング
         // TODO:draw in direct
 
+#if true
         // 定数バッファの設定(ビュー、プロジェクション)
         constant_buffer_instance_.view_ = view_->view_matrix_;
         constant_buffer_instance_.projection_ = view_->projection_matrix_;
+        constant_buffer_->Map(sizeof(ConstantBuffer), &(constant_buffer_instance_));
 
-        // TODO:ビューポートの設定
-        // TODO:シザー矩形の設定
+        // シェーダーリソースバッファの設定(ワールド)
+        instance_buffer_.clear();
+        for (auto& render_object : *execute_render_object_list_)
+        {
+          instance_buffer_.emplace_back(render_object.matrix_);
+        }
+        resource_buffer_->Map(instance_buffer_.data(), sizeof(DirectX::XMFLOAT4X4) * 10000);
 
+        auto& vertex_buffer = const_cast<Sein::Direct3D12::IVertexBuffer&>(execute_render_object_list_->at(0).vertex_buffer_);
+        auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(execute_render_object_list_->at(0).index_buffer_);
+        auto index_count = execute_render_object_list_->at(0).index_count_;
+        store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
+        store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
+        device_->Render(&store_command_list, index_count, 10000);
+#else
+        // 定数バッファの設定(ビュー、プロジェクション)
+        constant_buffer_instance_.view_ = view_->view_matrix_;
+        constant_buffer_instance_.projection_ = view_->projection_matrix_;
+        constant_buffer_->Map(sizeof(ConstantBuffer), &(constant_buffer_instance_));
 
         // ドローコール
         for (auto& render_object : *execute_render_object_list_)
@@ -262,6 +292,9 @@ namespace App
           store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
           device_->Render(&store_command_list, index_count, 1);
         }
+#endif
+        // TODO:ビューポートの設定
+        // TODO:シザー矩形の設定
 
         device_->EndScene(&store_command_list, buffer_index);
 
@@ -284,6 +317,8 @@ namespace App
 
       ConstantBuffer constant_buffer_instance_;                               ///< コンスタントバッファの実体
       std::unique_ptr<Sein::Direct3D12::IConstantBuffer> constant_buffer_;    ///< 定数バッファ
+      std::vector<DirectX::XMFLOAT4X4> instance_buffer_;                      ///< インスタンスバッファの実体
+      std::unique_ptr<Sein::Direct3D12::ShaderResourceBuffer> resource_buffer_;
 
       std::unique_ptr<View> view_;                                            ///< ビュー
 

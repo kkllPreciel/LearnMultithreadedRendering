@@ -48,8 +48,8 @@ VSOutput main(VSInput input)
 
     float4 pos = float4(input.position, 1.0);
 
-    //pos = mul(cbv[input.id].world, pos);
-    pos = mul(world, pos);
+    pos = mul(cbv[input.id].world, pos);
+    //pos = mul(world, pos);
     pos = mul(view, pos);
     pos = mul(projection, pos);
 

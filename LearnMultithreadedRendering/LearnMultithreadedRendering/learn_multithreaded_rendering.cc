@@ -82,7 +82,10 @@ void LearnMultithreadedRendering::MainLoop()
   // TODO:ゲームオブジェクトの更新
   scheduler_->Execute(0);
   DirectX::XMStoreFloat4x4(&matrix, DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(0.1f, 0.1f, 0.1f), DirectX::XMMatrixRotationZ(angle += DirectX::XM_PI / 180.0f)));
-  renderer_->Register(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetIndexCount(), matrix);
+  for (auto i = 0; i < 10000; ++i)
+  {
+    renderer_->Register(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetIndexCount(), matrix);
+  }
 
   // レンダリング終了待ち(GPUの処理終了待ち)
   renderer_->Present();
