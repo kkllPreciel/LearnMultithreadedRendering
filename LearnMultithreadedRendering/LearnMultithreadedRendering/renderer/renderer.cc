@@ -252,7 +252,6 @@ namespace App
         // TODO:ドローコールバッチング、ダイナミックバッチング
         // TODO:draw in direct
 
-#if true
         // 定数バッファの設定(ビュー、プロジェクション)
         constant_buffer_instance_.view_ = view_->view_matrix_;
         constant_buffer_instance_.projection_ = view_->projection_matrix_;
@@ -273,26 +272,7 @@ namespace App
         store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
         store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
         device_->Render(&store_command_list, index_count, 10000);
-#else
-        // 定数バッファの設定(ビュー、プロジェクション)
-        constant_buffer_instance_.view_ = view_->view_matrix_;
-        constant_buffer_instance_.projection_ = view_->projection_matrix_;
-        constant_buffer_->Map(sizeof(ConstantBuffer), &(constant_buffer_instance_));
 
-        // ドローコール
-        for (auto& render_object : *execute_render_object_list_)
-        {
-          auto& vertex_buffer = const_cast<Sein::Direct3D12::IVertexBuffer&>(render_object.vertex_buffer_);
-          auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(render_object.index_buffer_);
-          auto index_count = render_object.index_count_;
-          constant_buffer_instance_.world_ = render_object.matrix_;
-          constant_buffer_->Map(sizeof(ConstantBuffer), &(constant_buffer_instance_));
-          store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-          store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
-          store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
-          device_->Render(&store_command_list, index_count, 1);
-        }
-#endif
         // TODO:ビューポートの設定
         // TODO:シザー矩形の設定
 
