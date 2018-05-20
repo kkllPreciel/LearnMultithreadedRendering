@@ -99,7 +99,7 @@ namespace App
       
       /**
        *  @brief  頂点インデックスの個数を取得する
-       *  @param  頂点インデックスの個数
+       *  @return 頂点インデックスの個数
        */
       std::uint32_t GetIndexCount() const override
       {
