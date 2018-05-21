@@ -60,6 +60,12 @@
     <ClCompile Include="task\task_group.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="model\texture.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="model\material.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="learn_multithreaded_rendering.h">
@@ -99,6 +105,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="task\task_group.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model\material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model\texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
