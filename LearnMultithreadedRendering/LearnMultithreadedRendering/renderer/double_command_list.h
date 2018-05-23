@@ -72,6 +72,6 @@ namespace App
      *  @param  command_list_type:コマンドリストのタイプ
      *  @return ダブルコマンドリストインターフェイスへのシェアードポインタ
      */
-    static std::shared_ptr<IDoubleCommandList> Create(Sein::Direct3D12::Device* const device, const D3D12_COMMAND_LIST_TYPE& command_list_type);
+    static std::shared_ptr<IDoubleCommandList> Create(std::shared_ptr<Sein::Direct3D12::IDevice> device, const D3D12_COMMAND_LIST_TYPE& command_list_type);
   };
 };

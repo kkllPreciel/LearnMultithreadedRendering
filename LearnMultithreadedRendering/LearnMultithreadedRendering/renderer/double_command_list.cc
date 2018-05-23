@@ -37,7 +37,7 @@ namespace App
        *  @param  device:デバイス
        *  @param  command_list_type:コマンドリストのタイプ
        */
-      void Create(Sein::Direct3D12::Device* const device, const D3D12_COMMAND_LIST_TYPE& command_list_type)
+      void Create(std::shared_ptr<Sein::Direct3D12::IDevice> device, const D3D12_COMMAND_LIST_TYPE& command_list_type)
       {
         front_ = device->CreateCommandList(command_list_type);
         back_ = device->CreateCommandList(command_list_type);
@@ -90,7 +90,7 @@ namespace App
    *  @param  command_list_type:コマンドリストのタイプ
    *  @return ダブルコマンドリストインターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<IDoubleCommandList> IDoubleCommandList::Create(Sein::Direct3D12::Device* const device, const D3D12_COMMAND_LIST_TYPE& command_list_type)
+  std::shared_ptr<IDoubleCommandList> IDoubleCommandList::Create(std::shared_ptr<Sein::Direct3D12::IDevice> device, const D3D12_COMMAND_LIST_TYPE& command_list_type)
   {
     auto double_command_list = std::make_shared<DoubleCommandList>();
 

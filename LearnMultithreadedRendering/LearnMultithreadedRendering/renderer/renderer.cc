@@ -96,14 +96,13 @@ namespace App
       void Create(HWND handle, std::uint32_t width, std::uint32_t height, std::shared_ptr<ITaskScheduler> scheduler)
       {
         assert(device_ == nullptr);
-        device_ = std::make_unique<Sein::Direct3D12::Device>();
-        device_->Create(handle, width, height);
+        device_ = Sein::Direct3D12::IDevice::Create(handle, width, height);
 
         assert(scheduler_ == nullptr);
         scheduler_ = scheduler;
 
         // コマンドリストの作成
-        double_command_list_ = IDoubleCommandList::Create(device_.get(), D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
+        double_command_list_ = IDoubleCommandList::Create(device_, D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
 
         // レンダーオブジェクトキューの作成
         execute_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
@@ -288,7 +287,7 @@ namespace App
       }
 
     private:
-      std::unique_ptr<Sein::Direct3D12::Device> device_;                      ///< デバイス
+      std::shared_ptr<Sein::Direct3D12::IDevice> device_;                     ///< デバイス
       std::shared_ptr<App::IDoubleCommandList> double_command_list_;          ///< コマンドリスト(ダブルバッファリングする)
 
       std::unique_ptr<std::vector<RenderObject>> execute_render_object_list_; ///< 実行用描画オブジェクトのリスト
