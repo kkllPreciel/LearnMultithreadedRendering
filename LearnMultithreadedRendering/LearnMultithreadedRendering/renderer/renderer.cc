@@ -108,14 +108,21 @@ namespace App
         execute_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
         store_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
 
+        // ディスクリプターヒープの作成
+        D3D12_DESCRIPTOR_HEAP_DESC descriptor_heap_desc = {};
+        descriptor_heap_desc.NumDescriptors = 5;                                 // ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
+        descriptor_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;      // 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
+        descriptor_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;  // シェーダーからアクセス可
+        descriptor_heap_ = device_->CreateDescriptorHeap(descriptor_heap_desc);
+
         // 定数バッファの作成
-        constant_buffer_ = device_->CreateConstantBuffer(sizeof(ConstantBuffer));
+        constant_buffer_ = device_->CreateConstantBuffer(descriptor_heap_, sizeof(ConstantBuffer));
         DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.world_), DirectX::XMMatrixIdentity());
         DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.view_), DirectX::XMMatrixIdentity());
         DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.projection_), DirectX::XMMatrixIdentity());
 
         // シェーダーリソースバッファ(StructuredBuffer)の作成
-        resource_buffer_ = device_->CreateShaderResourceBuffer(10000, sizeof(DirectX::XMFLOAT4X4));
+        resource_buffer_ = device_->CreateShaderResourceBuffer(descriptor_heap_, 10000, sizeof(DirectX::XMFLOAT4X4));
 
         // ビューの作成
         view_ = std::make_unique<View>();
@@ -270,7 +277,7 @@ namespace App
         store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
         store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
-        device_->Render(&store_command_list, index_count, 10000);
+        device_->Render(&store_command_list, descriptor_heap_, index_count, 10000);
 
         // TODO:ビューポートの設定
         // TODO:シザー矩形の設定
@@ -293,7 +300,7 @@ namespace App
       std::unique_ptr<std::vector<RenderObject>> execute_render_object_list_; ///< 実行用描画オブジェクトのリスト
       std::unique_ptr<std::vector<RenderObject>> store_render_object_list_;   ///< 作成用描画オブジェクトのリスト
 
-
+      std::shared_ptr<Sein::Direct3D12::IDescriptorHeap> descriptor_heap_;    ///< 定数バッファ用ディスクリプターヒープ
       ConstantBuffer constant_buffer_instance_;                               ///< コンスタントバッファの実体
       std::unique_ptr<Sein::Direct3D12::IConstantBuffer> constant_buffer_;    ///< 定数バッファ
       std::vector<DirectX::XMFLOAT4X4> instance_buffer_;                      ///< インスタンスバッファの実体
