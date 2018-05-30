@@ -33,7 +33,7 @@ namespace App
       /**
        *  @brief  コンストラクタ
        */
-      Mesh() : vertex_buffer_(nullptr), index_buffer_(nullptr), vertex_count_(0), index_count_(0)
+      Mesh() : vertex_buffer_(nullptr), index_buffer_(nullptr), vertex_count_(0), index_count_(0), material_(nullptr)
       {
 
       }
@@ -55,6 +55,7 @@ namespace App
         index_buffer_.reset();
         vertex_count_ = 0;
         index_count_ = 0;
+        material_.reset();
       }
 
       /**
@@ -77,6 +78,15 @@ namespace App
       {
         index_buffer_.reset(index_buffer);
         index_count_ = index_count;
+      }
+
+      /**
+       *  @brief  マテリアルを設定する
+       *  @param  material:マテリアル
+       */
+      void SetMaterial(std::shared_ptr<IMaterial>& material)
+      {
+        material_ = material;
       }
       
       /**
@@ -106,11 +116,21 @@ namespace App
         return index_count_;
       }
 
+      /**
+       *  @brief  マテリアルを取得する
+       *  @return マテリアル
+       */
+      std::shared_ptr<IMaterial> GetMaterial() const override
+      {
+        return material_;
+      }
+
     private:
       std::unique_ptr<Sein::Direct3D12::IVertexBuffer> vertex_buffer_;  ///< 頂点バッファ
       std::unique_ptr<Sein::Direct3D12::IIndexBuffer> index_buffer_;    ///< インデックスバッファ
       std::uint32_t vertex_count_;                                      ///< 頂点数
       std::uint32_t index_count_;                                       ///< インデックス数
+      std::shared_ptr<IMaterial> material_;                             ///< マテリアル
     };
   };
 

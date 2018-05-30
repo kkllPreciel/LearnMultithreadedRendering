@@ -14,6 +14,7 @@
 #include <../MeshLoader/MeshLoader/mesh_loader.h>
 
 #include "../renderer/renderer.h"
+#include "../model/material.h"
 
 namespace App
 {
@@ -68,6 +69,12 @@ namespace App
      *  @return 頂点インデックスの個数
      */
     virtual std::uint32_t GetIndexCount() const = 0;
+
+    /**
+     *  @brief  マテリアルを取得する
+     *  @return マテリアル
+     */
+    virtual std::shared_ptr<IMaterial> GetMaterial() const = 0;
 
     /**
      *  @brief  メッシュを作成する
