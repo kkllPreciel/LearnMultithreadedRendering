@@ -24,15 +24,13 @@ namespace App
     class RenderObject
     {
     public:
-      RenderObject(const Sein::Direct3D12::IVertexBuffer& vertex_buffer, const Sein::Direct3D12::IIndexBuffer& index_buffer, const std::uint32_t index_count, const DirectX::XMFLOAT4X4& matrix)
-        : vertex_buffer_(vertex_buffer), index_buffer_(index_buffer), index_count_(index_count), matrix_(matrix)
+      RenderObject(const std::shared_ptr<IMesh>& mesh, const DirectX::XMFLOAT4X4& matrix)
+        : mesh_(mesh), matrix_(matrix)
       {
 
       }
 
-      const Sein::Direct3D12::IVertexBuffer& vertex_buffer_;
-      const Sein::Direct3D12::IIndexBuffer& index_buffer_;
-      const std::uint32_t index_count_;
+      const std::shared_ptr<IMesh>& mesh_;
       const DirectX::XMFLOAT4X4& matrix_;
     };
 
@@ -132,36 +130,22 @@ namespace App
       }
 
       /**
-       *  @brief  頂点バッファを作成する
-       *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
-       *  @return 頂点バッファへのユニークポインタ
+       *  @brief  メッシュを作成する
+       *  @param  mesh_data:メッシュデータ
        */
-      std::unique_ptr<Sein::Direct3D12::IVertexBuffer> CreateVertexBuffer(const std::uint32_t size_in_bytes) override
+      std::shared_ptr<IMesh> CreateMesh(std::shared_ptr<MeshLoader::IMeshData>& mesh_data) override
       {
-        return device_->CreateVertexBuffer(size_in_bytes);
-      }
-      
-      /**
-       *  @brief  頂点インデックスバッファを作成する
-       *  @param  size_in_bytes:頂点インデックスバッファのサイズ(頂点インデックスサイズ * 頂点インデックス数)
-       *  @return 頂点インデックスバッファのユニークID
-       */
-      std::unique_ptr<Sein::Direct3D12::IIndexBuffer> CreateIndexBuffer(const std::uint32_t size_in_bytes) override
-      {
-        return device_->CreateIndexBuffer(size_in_bytes);
+        return IMesh::CreateFromMeshData(device_.get(), mesh_data);
       }
 
       /**
        *  @brief  描画オブジェクトの登録を行う
-       *  @param  vertex_buffer:描画オブジェクトが使用する頂点バッファ
-       *  @param  index_buffer:描画オブジェクトが使用する頂点インデックスバッファ
-       *  @param  index_count:頂点インデックスの個数
+       *  @param  mesh:描画オブジェクトが使用するメッシュ
        *  @param  matrix:描画オブジェクトのワールド空間行列
        */
-      void Register(const Sein::Direct3D12::IVertexBuffer& vertex_buffer, const Sein::Direct3D12::IIndexBuffer& index_buffer, const std::uint32_t index_count, const DirectX::XMFLOAT4X4& matrix) override
+      void Register(const std::shared_ptr<IMesh>& mesh, const DirectX::XMFLOAT4X4& matrix) override
       {
-        // TODO:swapのタイミングで実行されても問題ないように
-        store_render_object_list_->emplace_back(RenderObject(vertex_buffer, index_buffer, index_count, matrix));
+        store_render_object_list_->emplace_back(RenderObject(mesh, matrix));
       }
 
       /**
@@ -271,13 +255,21 @@ namespace App
         }
         resource_buffer_->Map(instance_buffer_.data(), sizeof(DirectX::XMFLOAT4X4) * 10000);
 
-        auto& vertex_buffer = const_cast<Sein::Direct3D12::IVertexBuffer&>(execute_render_object_list_->at(0).vertex_buffer_);
-        auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(execute_render_object_list_->at(0).index_buffer_);
-        auto index_count = execute_render_object_list_->at(0).index_count_;
+        auto& vertex_buffer = const_cast<Sein::Direct3D12::IVertexBuffer&>(execute_render_object_list_->at(0).mesh_->GetVertexBuffer());
+        auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(execute_render_object_list_->at(0).mesh_->GetIndexBuffer());
+        auto index_count = execute_render_object_list_->at(0).mesh_->GetIndexCount();
         store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
         store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
-        device_->Render(&store_command_list, descriptor_heap_, index_count, 10000);
+        device_->Render(&store_command_list, descriptor_heap_, index_count, 5000);
+
+        /*auto& vertex_buffer_two = const_cast<Sein::Direct3D12::IVertexBuffer&>(execute_render_object_list_->at(9999).vertex_buffer_);
+        auto& index_buffer_two = const_cast<Sein::Direct3D12::IIndexBuffer&>(execute_render_object_list_->at(9999).index_buffer_);
+        index_count = execute_render_object_list_->at(9999).index_count_;
+        store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer_two.GetView()));
+        store_command_list.SetIndexBuffer(&(index_buffer_two.GetView()));
+        device_->Render(&store_command_list, descriptor_heap_, index_count, 5000);*/
 
         // TODO:ビューポートの設定
         // TODO:シザー矩形の設定

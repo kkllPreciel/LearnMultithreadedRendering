@@ -11,8 +11,7 @@
 // include
 #include <memory>
 #include <DirectXMath.h>
-#include <Sein/Direct3D12/vertex_buffer.h>
-#include <Sein/Direct3D12/index_buffer.h>
+#include "model/mesh.h"
 #include "task/task_scheduler.h"
 
 namespace App
@@ -34,27 +33,17 @@ namespace App
     virtual ~IRenderer() = default;
 
     /**
-     *  @brief  頂点バッファを作成する
-     *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
-     *  @return 頂点バッファへのユニークポインタ
+     *  @brief  メッシュを作成する
+     *  @param  mesh_data:メッシュデータ
      */
-    virtual std::unique_ptr<Sein::Direct3D12::IVertexBuffer> CreateVertexBuffer(const std::uint32_t size_in_bytes) = 0;
-    
-    /**
-     *  @brief  頂点インデックスバッファを作成する
-     *  @param  size_in_bytes:頂点インデックスバッファのサイズ(頂点インデックスサイズ * 頂点インデックス数)
-     *  @return 頂点インデックスバッファのユニークID
-     */
-    virtual std::unique_ptr<Sein::Direct3D12::IIndexBuffer> CreateIndexBuffer(const std::uint32_t size_in_bytes) = 0;
+    virtual std::shared_ptr<IMesh> CreateMesh(std::shared_ptr<MeshLoader::IMeshData>& mesh_data) = 0;
 
     /**
      *  @brief  描画オブジェクトの登録を行う
-     *  @param  vertex_buffer:描画オブジェクトが使用する頂点バッファ
-     *  @param  index_buffer:描画オブジェクトが使用する頂点インデックスバッファ
-     *  @param  index_count:頂点インデックスの個数
+     *  @param  mesh:描画オブジェクトが使用するメッシュ
      *  @param  matrix:描画オブジェクトのワールド空間行列
      */
-    virtual void Register(const Sein::Direct3D12::IVertexBuffer& vertex_buffer, const Sein::Direct3D12::IIndexBuffer& index_buffer, const std::uint32_t index_count, const DirectX::XMFLOAT4X4& matrix) = 0;
+    virtual void Register(const std::shared_ptr<IMesh>& mesh, const DirectX::XMFLOAT4X4& matrix) = 0;
 
     /**
      *  @brief  ビューを登録する
