@@ -49,11 +49,11 @@ namespace App
 
   /**
    *  @brief  ファイルからテクスチャを作成する
-   *  @param  renderer:レンダラー
+   *  @param  device:デバイス
    *  @param  file_path:テクスチャファイルパス
    *  @return テクスチャ用インターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<ITexture> ITexture::CreateFromFile(std::shared_ptr<IRenderer> renderer, const std::string& file_path)
+  std::shared_ptr<ITexture> CreateFromFile(Sein::Direct3D12::IDevice* const device, const std::string& file_path)
   {
     auto texture = std::make_shared<Texture>();
 

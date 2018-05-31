@@ -11,9 +11,9 @@
 // include
 #include <memory>
 
+#include <Sein/Direct3D12/direct3d12_device.h>
 #include <../MeshLoader/MeshLoader/mesh_loader.h>
 
-#include "../renderer/renderer.h"
 #include "../model/material.h"
 
 namespace App
@@ -78,29 +78,29 @@ namespace App
 
     /**
      *  @brief  メッシュを作成する
-     *  @param  renderer:レンダラー
+     *  @param  device:デバイス
      *  @param  vertices:頂点配列へのポインタ
      *  @param  vertex_count:頂点数
      *  @param  indices:頂点インデックス配列へのポインタ
      *  @param  index_count:頂点インデックス数
      *  @return メッシュ用インターフェイスへのシェアードポインタ
      */
-    static std::shared_ptr<IMesh> Create(IRenderer* const renderer, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count);
+    static std::shared_ptr<IMesh> Create(Sein::Direct3D12::IDevice* const device, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count);
 
     /**
      *  @brief  メッシュデータからメッシュを作成する
-     *  @param  renderer:レンダラー
+     *  @param  device:デバイス
      *  @param  mesh_data:メッシュデータ
      *  @return メッシュ用インターフェイスへのシェアードポインタ
      */
-    static std::shared_ptr<IMesh> CreateFromMeshData(IRenderer* const renderer, std::shared_ptr<MeshLoader::IMeshData> mesh_data);
+    static std::shared_ptr<IMesh> CreateFromMeshData(Sein::Direct3D12::IDevice* const device, std::shared_ptr<MeshLoader::IMeshData> mesh_data);
 
     /**
      *  @brief  三角形(1ポリゴン)のメッシュを作成する
-     *  @param  renderer:レンダラー
+     *  @param  device:デバイス
      *  @param  positions:頂点座標の配列
      *  @return メッシュ用インターフェイスへのシェアードポインタ
      */
-    static std::shared_ptr<IMesh> CreateForTriangle(IRenderer* const renderer, DirectX::XMFLOAT3 positions[3]);
+    static std::shared_ptr<IMesh> CreateForTriangle(Sein::Direct3D12::IDevice* const device, DirectX::XMFLOAT3 positions[3]);
   };
 };

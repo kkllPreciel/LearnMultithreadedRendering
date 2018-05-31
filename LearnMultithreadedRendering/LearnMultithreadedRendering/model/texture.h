@@ -11,7 +11,7 @@
 // include
 #include <memory>
 #include <string>
-#include "../renderer/renderer.h"
+#include <Sein/Direct3D12/direct3d12_device.h>
 
 namespace App
 {
@@ -53,10 +53,10 @@ namespace App
 
     /**
      *  @brief  ファイルからテクスチャを作成する
-     *  @param  renderer:レンダラー
+     *  @param  device:デバイス
      *  @param  file_path:テクスチャファイルパス
      *  @return テクスチャ用インターフェイスへのシェアードポインタ
      */
-    static std::shared_ptr<ITexture> CreateFromFile(std::shared_ptr<IRenderer> renderer, const std::string& file_path);
+    static std::shared_ptr<ITexture> CreateFromFile(Sein::Direct3D12::IDevice* const device, const std::string& file_path);
   };
 };

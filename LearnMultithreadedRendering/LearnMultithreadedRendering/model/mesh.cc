@@ -136,18 +136,18 @@ namespace App
 
   /**
    *  @brief  メッシュを作成する
-   *  @param  renderer:レンダラー
+   *  @param  device:デバイス
    *  @param  vertices:頂点配列へのポインタ
    *  @param  vertex_count:頂点数
    *  @param  indices:頂点インデックス配列へのポインタ
    *  @param  index_count:頂点インデックス数
    *  @return メッシュ用インターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<IMesh> IMesh::Create(IRenderer* const renderer, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count)
+  std::shared_ptr<IMesh> IMesh::Create(Sein::Direct3D12::IDevice* const device, void* const vertices, std::uint32_t vertex_count, void* const indices, std::uint32_t index_count)
   {
     auto mesh = std::make_shared<Mesh>();
-    auto vertex_buffer = renderer->CreateVertexBuffer(sizeof(Vertex) * vertex_count).release();
-    auto index_buffer = renderer->CreateIndexBuffer(sizeof(std::uint32_t) * index_count).release();
+    auto vertex_buffer = device->CreateVertexBuffer(sizeof(Vertex) * vertex_count).release();
+    auto index_buffer = device->CreateIndexBuffer(sizeof(std::uint32_t) * index_count).release();
 
     mesh->SetVertexBuffer(vertex_buffer, vertex_count);
     mesh->SetIndexBuffer(index_buffer, index_count);
@@ -157,17 +157,17 @@ namespace App
 
     return mesh;
   }
-
+  
   /**
    *  @brief  メッシュデータからメッシュを作成する
-   *  @param  renderer:レンダラー
+   *  @param  device:デバイス
    *  @param  mesh_data:メッシュデータ
    *  @return メッシュ用インターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<IMesh> IMesh::CreateFromMeshData(IRenderer* const renderer, std::shared_ptr<MeshLoader::IMeshData> mesh_data)
+  std::shared_ptr<IMesh> IMesh::CreateFromMeshData(Sein::Direct3D12::IDevice* const device, std::shared_ptr<MeshLoader::IMeshData> mesh_data)
   {
-    auto vertex_buffer = renderer->CreateVertexBuffer(mesh_data->GetAllVertexSize()).release();
-    auto index_buffer = renderer->CreateIndexBuffer(mesh_data->GetAllVertexIndexSize()).release();
+    auto vertex_buffer = device->CreateVertexBuffer(mesh_data->GetAllVertexSize()).release();
+    auto index_buffer = device->CreateIndexBuffer(mesh_data->GetAllVertexIndexSize()).release();
 
     auto mesh = std::make_shared<Mesh>();
     mesh->SetVertexBuffer(vertex_buffer, mesh_data->GetVertexCount());
@@ -178,14 +178,14 @@ namespace App
 
     return mesh;
   }
-
+  
   /**
    *  @brief  三角形(1ポリゴン)のメッシュを作成する
-   *  @param  renderer:レンダラー
+   *  @param  device:デバイス
    *  @param  positions:頂点座標の配列
    *  @return メッシュ用インターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<IMesh> IMesh::CreateForTriangle(IRenderer* const renderer, DirectX::XMFLOAT3 positions[3])
+  std::shared_ptr<IMesh> IMesh::CreateForTriangle(Sein::Direct3D12::IDevice* const device, DirectX::XMFLOAT3 positions[3])
   {
     Vertex vertices[] = {
       { {},{ 0.0f, 1.0f, 0.0f },{ 0.0f, 1.0f } },
@@ -199,8 +199,8 @@ namespace App
     vertices[2].position = positions[2];
 
     auto mesh = std::make_shared<Mesh>();
-    auto vertex_buffer = renderer->CreateVertexBuffer(sizeof(Vertex) * 3).release();
-    auto index_buffer = renderer->CreateIndexBuffer(sizeof(std::uint32_t) * 3).release();
+    auto vertex_buffer = device->CreateVertexBuffer(sizeof(Vertex) * 3).release();
+    auto index_buffer = device->CreateIndexBuffer(sizeof(std::uint32_t) * 3).release();
 
     mesh->SetVertexBuffer(vertex_buffer, 3);
     mesh->SetIndexBuffer(index_buffer, 3);
