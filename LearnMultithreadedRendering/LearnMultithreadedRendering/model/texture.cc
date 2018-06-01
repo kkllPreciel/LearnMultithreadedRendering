@@ -53,7 +53,7 @@ namespace App
    *  @param  file_path:テクスチャファイルパス
    *  @return テクスチャ用インターフェイスへのシェアードポインタ
    */
-  std::shared_ptr<ITexture> CreateFromFile(Sein::Direct3D12::IDevice* const device, const std::string& file_path)
+  std::shared_ptr<ITexture> ITexture::CreateFromFile(Sein::Direct3D12::IDevice* const device, const std::string& file_path)
   {
     auto texture = std::make_shared<Texture>();
 
