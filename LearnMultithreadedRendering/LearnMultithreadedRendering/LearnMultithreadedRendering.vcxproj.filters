@@ -66,6 +66,9 @@
     <ClCompile Include="model\material.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\graphics_pipeline_state.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="learn_multithreaded_rendering.h">
@@ -111,6 +114,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="model\texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\graphics_pipeline_state.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
