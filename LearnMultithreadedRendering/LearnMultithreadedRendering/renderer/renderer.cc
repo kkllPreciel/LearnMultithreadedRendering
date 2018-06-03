@@ -11,6 +11,7 @@
 #include <Sein/Direct3D12/direct3d12_device.h>
 #include <Sein/Direct3D12/shader_resource_buffer.h>
 #include "renderer/double_command_list.h"
+#include "renderer/graphics_pipeline_state.h"
 #include "task/task.h" 
 #include "task/task_group.h" 
 
@@ -45,19 +46,6 @@ namespace App
       DirectX::XMFLOAT4X4 projection_matrix_;
       D3D12_VIEWPORT viewport_;
       D3D12_RECT scissor_;
-    };
-
-    /**
-     *  @brief  定数バッファ用クラス
-     */
-    class ConstantBuffer
-    {
-    public:
-#pragma pack(push, 1)
-      DirectX::XMFLOAT4X4 world_;
-      DirectX::XMFLOAT4X4 view_;
-      DirectX::XMFLOAT4X4 projection_;
-#pragma pack(pop)
     };
 
     /**
@@ -106,21 +94,8 @@ namespace App
         execute_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
         store_render_object_list_ = std::make_unique<std::vector<RenderObject>>();
 
-        // ディスクリプターヒープの作成
-        D3D12_DESCRIPTOR_HEAP_DESC descriptor_heap_desc = {};
-        descriptor_heap_desc.NumDescriptors = 5;                                 // ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
-        descriptor_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;      // 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
-        descriptor_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;  // シェーダーからアクセス可
-        descriptor_heap_ = device_->CreateDescriptorHeap(descriptor_heap_desc);
-
-        // 定数バッファの作成
-        constant_buffer_ = device_->CreateConstantBuffer(descriptor_heap_, sizeof(ConstantBuffer));
-        DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.world_), DirectX::XMMatrixIdentity());
-        DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.view_), DirectX::XMMatrixIdentity());
-        DirectX::XMStoreFloat4x4(&(constant_buffer_instance_.projection_), DirectX::XMMatrixIdentity());
-
-        // シェーダーリソースバッファ(StructuredBuffer)の作成
-        resource_buffer_ = device_->CreateShaderResourceBuffer(descriptor_heap_, 10000, sizeof(DirectX::XMFLOAT4X4));
+        // グラフィックスパイプラインステートの作成
+        pipeline_state_ = App::IGraphicsPipelineState::Create(device_.get());
 
         // ビューの作成
         view_ = std::make_unique<View>();
@@ -243,25 +218,37 @@ namespace App
         // TODO:draw in direct
 
         // 定数バッファの設定(ビュー、プロジェクション)
-        constant_buffer_instance_.view_ = view_->view_matrix_;
-        constant_buffer_instance_.projection_ = view_->projection_matrix_;
-        constant_buffer_->Map(sizeof(ConstantBuffer), &(constant_buffer_instance_));
+        pipeline_state_->SetViewMatrix(view_->view_matrix_);
+        pipeline_state_->SetProjectionMatrix(view_->projection_matrix_);
 
         // シェーダーリソースバッファの設定(ワールド)
-        instance_buffer_.clear();
+        std::vector<DirectX::XMFLOAT4X4> instance_buffer_;
         for (auto& render_object : *execute_render_object_list_)
         {
           instance_buffer_.emplace_back(render_object.matrix_);
         }
-        resource_buffer_->Map(instance_buffer_.data(), sizeof(DirectX::XMFLOAT4X4) * 10000);
+        pipeline_state_->SetWorldMatrices(instance_buffer_.data(), sizeof(DirectX::XMFLOAT4X4) * execute_render_object_list_->size());
 
+        // 頂点バッファの設定
         auto& vertex_buffer = const_cast<Sein::Direct3D12::IVertexBuffer&>(execute_render_object_list_->at(0).mesh_->GetVertexBuffer());
-        auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(execute_render_object_list_->at(0).mesh_->GetIndexBuffer());
-        auto index_count = execute_render_object_list_->at(0).mesh_->GetIndexCount();
-        store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         store_command_list.SetVertexBuffers(0, 1, &(vertex_buffer.GetView()));
+
+        // 頂点インデックスバッファの設定
+        auto& index_buffer = const_cast<Sein::Direct3D12::IIndexBuffer&>(execute_render_object_list_->at(0).mesh_->GetIndexBuffer());
         store_command_list.SetIndexBuffer(&(index_buffer.GetView()));
-        device_->Render(&store_command_list, descriptor_heap_, index_count, 5000);
+
+        // トポロジーの設定
+        store_command_list.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        
+        // 下記項目は全てパイプラインクラスで行う
+        // TODO:パイプラインの設定
+        // TODO:ルートシグネチャの設定
+        // TODO:ディスクリプターヒープの設定
+        // TODO:ディスクリプータヒープテーブルを設定
+        
+        // 描画
+        auto index_count = execute_render_object_list_->at(0).mesh_->GetIndexCount();
+        device_->Render(&store_command_list, pipeline_state_->GetDescriptorHeap(), index_count, 5000);
 
         /*auto& vertex_buffer_two = const_cast<Sein::Direct3D12::IVertexBuffer&>(execute_render_object_list_->at(9999).vertex_buffer_);
         auto& index_buffer_two = const_cast<Sein::Direct3D12::IIndexBuffer&>(execute_render_object_list_->at(9999).index_buffer_);
@@ -288,15 +275,10 @@ namespace App
     private:
       std::shared_ptr<Sein::Direct3D12::IDevice> device_;                     ///< デバイス
       std::shared_ptr<App::IDoubleCommandList> double_command_list_;          ///< コマンドリスト(ダブルバッファリングする)
+      std::shared_ptr<App::IGraphicsPipelineState> pipeline_state_;           ///< グラフィックスパイプラインステート
 
       std::unique_ptr<std::vector<RenderObject>> execute_render_object_list_; ///< 実行用描画オブジェクトのリスト
       std::unique_ptr<std::vector<RenderObject>> store_render_object_list_;   ///< 作成用描画オブジェクトのリスト
-
-      std::shared_ptr<Sein::Direct3D12::IDescriptorHeap> descriptor_heap_;    ///< 定数バッファ用ディスクリプターヒープ
-      ConstantBuffer constant_buffer_instance_;                               ///< コンスタントバッファの実体
-      std::unique_ptr<Sein::Direct3D12::IConstantBuffer> constant_buffer_;    ///< 定数バッファ
-      std::vector<DirectX::XMFLOAT4X4> instance_buffer_;                      ///< インスタンスバッファの実体
-      std::unique_ptr<Sein::Direct3D12::ShaderResourceBuffer> resource_buffer_;
 
       std::unique_ptr<View> view_;                                            ///< ビュー
 
